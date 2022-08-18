@@ -1,0 +1,97 @@
+package kr.mashup.seehyangweb.facade
+
+import kr.mashup.seehyangbusiness.business.UserInfo
+import kr.mashup.seehyangbusiness.business.UserService
+import kr.mashup.seehyangcore.vo.Gender
+import kr.mashup.seehyangweb.auth.UserAuth
+import kr.mashup.seehyangweb.common.NonTransactionalService
+
+@NonTransactionalService
+class UserFacadeService(
+    private val userService: UserService,
+) {
+
+    fun getUser(userAuth: UserAuth): UserInfoResponse {
+        val userInfo: UserInfo = userService.getByIdOrThrow(id = userAuth.id)
+        return UserInfoResponse.from(userInfo)
+    }
+
+    fun isDuplicateNickname(nickname: String): DuplicateNicknameResponse {
+        val isDuplicated: Boolean = userService.isDuplicatedNickname(nickname)
+        return DuplicateNicknameResponse(isDuplicated)
+    }
+
+    fun changeUserDetail(userAuth: UserAuth, registerUserDetailRequest: RegisterUserDetailRequest): UserInfoResponse {
+        val (nickname, age, gender) = registerUserDetailRequest.copy()
+        userService.changeUserDetail(id = userAuth.id, age = age, nickname = nickname, gender = gender)
+
+        val userInfo: UserInfo = userService.getByIdOrThrow(id = userAuth.id)
+
+        return UserInfoResponse.from(userInfo)
+    }
+
+    fun signUpUser(signUpRequest: SignUpRequest): SignUpResponse {
+        val (email, password, nickname, age, gender) = signUpRequest.copy()
+        val id: Long =
+            userService.signUp(email = email, password = password, nickname = nickname, age = age, gender = gender)
+
+        return SignUpResponse(id)
+    }
+
+    fun withdrawUser(userAuth: UserAuth, withdrawRequest: WithdrawRequest) {
+        userService.withdraw(userAuth.id, withdrawRequest.password)
+    }
+
+    fun changeProfileImage(userAuth: UserAuth, profileUpdateRequest: ProfileUpdateRequest): UserInfoResponse {
+        userService.changeProfile(userAuth.id, profileUpdateRequest.imageId)
+        val userInfo: UserInfo = userService.getByIdOrThrow(id = userAuth.id)
+        return UserInfoResponse.from(userInfo)
+    }
+}
+
+data class RegisterUserDetailRequest(
+    val nickname: String?,
+    val age: Int?,
+    val gender: Gender?
+)
+
+data class ProfileUpdateRequest(
+    val imageId: Long
+)
+
+data class SignUpRequest(
+    val email: String,
+    val password: String,
+    val nickname: String,
+    val age: Int,
+    val gender: Gender,
+)
+
+data class UserInfoResponse(
+    val id: Long,
+    val email: String,
+    val nickname: String,
+    val age: Int,
+    val gender: Gender,
+    val profileImageId: Long?
+){
+    companion object{
+        fun from(userInfo: UserInfo): UserInfoResponse{
+            val (id, email, nickname, age, gender, profileImageId) = userInfo.copy()
+            return UserInfoResponse(id!!,email, nickname, age?:0, gender, profileImageId)
+        }
+    }
+}
+
+data class DuplicateNicknameResponse(
+    val isDuplicated: Boolean
+)
+
+data class SignUpResponse(
+    val id: Long
+)
+
+data class WithdrawRequest(
+    val password: String
+)
+
