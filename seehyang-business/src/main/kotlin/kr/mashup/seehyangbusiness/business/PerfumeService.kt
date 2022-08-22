@@ -8,7 +8,6 @@ import kr.mashup.seehyangrds.perfume.entity.*
 import kr.mashup.seehyangrds.user.service.UserQueryDomain
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import java.time.LocalDate
 
 @TransactionalService
 class PerfumeService(
@@ -21,21 +20,23 @@ class PerfumeService(
         return PerfumeInfo.from(perfume)
     }
     fun getLikeCountById(perfumeId: Long):Long{
-        return perfumeDomain.getLikeCount(perfumeId)
+        val perfume = perfumeDomain.getByIdOrThrow(perfumeId)
+        return perfumeDomain.getLikeCount(perfume)
     }
 
     fun likePerfume(userId:Long, perfumeId:Long){
-        val user = userQueryDomain.getByIdOrThrow(userId)
-        perfumeDomain.likePerfume(perfumeId, user)
+        val perfume = perfumeDomain.getByIdOrThrow(perfumeId)
+        val user = userQueryDomain.getActiveByIdOrThrow(userId)
+        perfumeDomain.likePerfume(perfume, user)
     }
 
-    fun dislikePerfume(userId:Long, perfumeId:Long){
-        val user = userQueryDomain.getByIdOrThrow(userId)
-        perfumeDomain.dislikePerfume(perfumeId, user)
-    }
 
     fun searchByPerfumeName(name: String, pageable: Pageable): Page<PerfumeInfo> {
         return perfumeDomain.searchByName(name, pageable).map { PerfumeInfo.from(it) }
+    }
+
+    fun getAll(pageable: Pageable): Page<PerfumeInfo> {
+        return perfumeDomain.getAll(pageable).map { PerfumeInfo.from(it) }
     }
 
 }

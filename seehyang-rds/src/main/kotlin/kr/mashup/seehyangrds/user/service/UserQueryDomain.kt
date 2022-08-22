@@ -14,31 +14,26 @@ class UserQueryDomain(
     private val userRepository: UserRepository
 ) {
 
-    fun getByIdOrThrow(id: Long): User
-    = userRepository.findById(id).orElseThrow { NOT_FOUND_USER_EXCEPTION }
+    fun getActiveByIdOrThrow(id: Long): User =
+        userRepository.findById(id).filter { it.status == UserStatus.ACTIVE }.orElseThrow { NOT_FOUND_USER_EXCEPTION }
 
-    fun existById(id: Long): Boolean
-    = userRepository.existsById(id)
+    fun existById(id: Long): Boolean = userRepository.existsById(id)
 
-    fun getByEmailOrThrow(email: String): User
-    = userRepository.findByEmail(email) ?: throw NOT_FOUND_USER_EXCEPTION
+    fun getActiveByEmailOrThrow(email: String): User =
+        userRepository.findByEmail(email).takeIf { it?.status == UserStatus.ACTIVE } ?: throw NOT_FOUND_USER_EXCEPTION
 
-    fun existByEmail(email: String): Boolean
-    = userRepository.existsByEmail(email)
+    fun existByEmail(email: String): Boolean = userRepository.existsByEmail(email)
 
-    fun getByNicknameOrThrow(nickname: String): User
-    = userRepository.findByNickname(nickname) ?: throw NOT_FOUND_USER_EXCEPTION
+    fun getActiveByNicknameOrThrow(nickname: String): User =
+        userRepository.findByNickname(nickname).takeIf { it?.status == UserStatus.ACTIVE }
+            ?: throw NOT_FOUND_USER_EXCEPTION
 
-    fun existByNickname(nickname: String): Boolean
-    = userRepository.existsByNickname(nickname)
+    fun existByNickname(nickname: String): Boolean = userRepository.existsByNickname(nickname)
 
-    fun getByAge(age: Int): User?
-    = userRepository.findByAge(age)
+    fun getActiveByAge(age: Int): User? = userRepository.findByAge(age).takeIf { it?.status == UserStatus.ACTIVE }
 
-    fun getByStatus(status: UserStatus): List<User>
-    = userRepository.findByStatus(status)
+    fun getByStatus(status: UserStatus): List<User> = userRepository.findByStatus(status)
 
     private val NOT_FOUND_USER_EXCEPTION = NotFoundException(ResultCode.NOT_FOUND_USER)
-    private val ALREADY_EXIST_EXCEPTION = BadRequestException(ResultCode.ALREADY_EXIST_USER)
 
 }

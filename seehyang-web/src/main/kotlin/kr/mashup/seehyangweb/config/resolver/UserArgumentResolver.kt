@@ -2,6 +2,7 @@ package kr.mashup.seehyangweb.config.resolver
 
 import kr.mashup.seehyangcore.exception.BadRequestException
 import kr.mashup.seehyangcore.exception.ResultCode
+import kr.mashup.seehyangcore.exception.UnauthorizedException
 import kr.mashup.seehyangweb.auth.UserAuth
 import kr.mashup.seehyangweb.auth.UserAuthService
 import org.springframework.core.MethodParameter
@@ -28,7 +29,11 @@ class UserArgumentResolver(
         binderFactory: WebDataBinderFactory?
     ): Any? {
 
-        val token = webRequest.getHeader("Authorization")?: throw BadRequestException(ResultCode.UNAUTHORIZED_USER)
+        val bearerToken = webRequest.getHeader("Authorization")?: throw BadRequestException(ResultCode.UNAUTHORIZED_USER)
+        if(!bearerToken.startsWith("Bearer ")){
+            throw UnauthorizedException(ResultCode.UNAUTHORIZED)
+        }
+        val token = bearerToken.substring(7)
         val id = userAuthService.getId(token)
 
         return UserAuth(id)

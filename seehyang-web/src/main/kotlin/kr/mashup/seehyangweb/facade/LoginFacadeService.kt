@@ -4,7 +4,8 @@ import kr.mashup.seehyangbusiness.business.UserService
 import kr.mashup.seehyangweb.auth.UserAuth
 import kr.mashup.seehyangweb.auth.UserAuthService
 import kr.mashup.seehyangweb.common.NonTransactionalService
-import org.springframework.stereotype.Service
+import javax.validation.constraints.Email
+import javax.validation.constraints.NotBlank
 
 @NonTransactionalService
 class LoginFacadeService(
@@ -16,7 +17,7 @@ class LoginFacadeService(
         val email = request.email
         val password = request.password
 
-        val userInfo = userService.getByEmailAndPasswordOrThrow(email, password)
+        val userInfo = userService.getActiveUserByEmailAndPasswordOrThrow(email, password)
         val token = userAuthService.getToken(UserAuth(userInfo.id!!))
 
         return LoginResponse(token)
@@ -25,7 +26,9 @@ class LoginFacadeService(
 }
 
 data class LoginRequest(
+    @Email(message = "올바르지 않은 이메일 형식입니다.")
     val email: String,
+    @NotBlank(message = "비밀번호는 비어있을 수 없습니다.")
     val password: String
 )
 

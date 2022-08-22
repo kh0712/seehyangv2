@@ -9,7 +9,10 @@ import javax.persistence.*
 
 
 @Entity
-@Table(name = "users")
+@Table(
+    name = "users",
+    indexes = [
+        Index(name = "email", columnList = "email", unique = true)])
 class User(
     var nickname: String,
 
@@ -27,19 +30,19 @@ class User(
 
     @OneToOne(fetch = FetchType.LAZY)
     var profile: Image? = null
+
 ) : BaseEntity() {
 
 
     lateinit var password: String
 
-    fun isMatchedPassword(rawPassword: String): Boolean
-    = passwordEncoder.matches(rawPassword, this.password)
+    fun isMatchedPassword(rawPassword: String): Boolean = passwordEncoder.matches(rawPassword, this.password)
 
     init {
         this.password = passwordEncoder.encode(password)
     }
 
-    companion object{
+    companion object {
         val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()
     }
 

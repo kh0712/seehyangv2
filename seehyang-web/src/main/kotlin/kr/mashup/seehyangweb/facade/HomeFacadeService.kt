@@ -32,26 +32,28 @@ class HomeFacadeService(
     }
 
     // 좋아요 많은 스토리 가져온다.
-    fun hotStory(): List<StoryInfoResponse> {
+    fun hotStory(): List<StoryBasicInfoResponse> {
         return communityService
             .getPublicStories(StorySortRequest(0, 10, StorySortBy.LIKE, Sort.Direction.DESC))
             .map {
                 var userInfo:UserInfo
                 try{
-                    userInfo = userService.getByIdOrThrow(it.userId)
+                    userInfo = userService.getActiveUserByIdOrThrow(it.userId)
                 }catch (e:Exception){
                     userInfo = UserInfo(0L,"deleted", "deleted",null,Gender.NULL, null)
                 }
                 val perfumeInfo = perfumeService.getByIdOrThrow(it.perfumeId)
-                StoryInfoResponse.from(userInfo,perfumeInfo, it) }
+                StoryBasicInfoResponse.from(userInfo, perfumeInfo, it) }
             .toList()
     }
 
     // 저번주 스토리 많이 올라온 향수를 가져온다.
     fun weeklyRanking(): List<PerfumeInfo> {
-        val beforeWeek = LocalDate.now().minusWeeks(1L)
+
+        val beforeWeek = LocalDate.now().atStartOfDay().minusWeeks(1L)
         val fieldISO = WeekFields.of(Locale.KOREA).dayOfWeek()
         val pageRequest = PageRequest.of(0,10)
+
         return communityService.getMostStoriesPerfumes(beforeWeek.with(fieldISO, 1), beforeWeek.with(fieldISO, 7), pageRequest)
     }
 

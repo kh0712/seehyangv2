@@ -1,11 +1,12 @@
 package kr.mashup.seehyangbusiness.business
 
 import kr.mashup.seehyangbusiness.port.StorageService
+import kr.mashup.seehyangcore.exception.NotFoundException
+import kr.mashup.seehyangcore.exception.ResultCode
 import kr.mashup.seehyangcore.vo.ImageStatus
 import kr.mashup.seehyangcore.vo.StorageType
 import kr.mashup.seehyangrds.common.TransactionalService
 import kr.mashup.seehyangrds.image.domain.ImageDomain
-import kr.mashup.seehyangrds.user.entity.User
 import kr.mashup.seehyangrds.user.service.UserQueryDomain
 import java.io.InputStream
 import java.time.LocalDateTime
@@ -19,16 +20,19 @@ class ImageService(
 
     fun saveImage(uploaderId: Long, inputStream: InputStream, extension:String): Long {
 
-        val uploader = userQueryDomain.getByIdOrThrow(uploaderId)
+        val uploader = userQueryDomain.getActiveByIdOrThrow(uploaderId)
         val storageInfo = storageService.save(inputStream,extension)
         val image = imageDomain.save(uploader, storageInfo.url, storageInfo.storageType)
 
         return image.id!!
     }
 
-    fun getImage(imageId: Long):ImageInfo{
+    fun getActiveImage(imageId: Long):ImageInfo{
 
         val image = imageDomain.getByIdOrThrow(imageId)
+        if(image.status != ImageStatus.ACTIVE){
+            throw NotFoundException(ResultCode.NOT_FOUND_IMAGE)
+        }
         return ImageInfo(UserInfo.from(image.uploader), image.url, image.status, image.type, image.createdAt, image.updatedAt)
     }
 

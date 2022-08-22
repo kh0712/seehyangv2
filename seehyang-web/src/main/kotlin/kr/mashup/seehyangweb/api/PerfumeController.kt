@@ -4,8 +4,9 @@ import kr.mashup.seehyangweb.auth.UserAuth
 import kr.mashup.seehyangweb.common.ApiV1
 import kr.mashup.seehyangweb.common.EmptyResponse
 import kr.mashup.seehyangweb.common.SeehyangResponse
+import kr.mashup.seehyangweb.facade.PerfumeBasicInfoResponse
 import kr.mashup.seehyangweb.facade.PerfumeFacadeService
-import kr.mashup.seehyangweb.facade.PerfumeInfoResponse
+import kr.mashup.seehyangweb.facade.PerfumeDetailInfoResponse
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.web.bind.annotation.GetMapping
@@ -23,18 +24,28 @@ class PerfumeController(
     fun getPerfumeDetail(
         @ApiIgnore userAuth: UserAuth,
         @PathVariable perfumeId: Long,
-    ) : SeehyangResponse<PerfumeInfoResponse> {
+    ) : SeehyangResponse<PerfumeDetailInfoResponse> {
 
-        val perfume = perfumeFacadeService.getPerfume(perfumeId,userAuth)
+        val perfume = perfumeFacadeService.getPerfume(userAuth,perfumeId)
         return SeehyangResponse.success(perfume)
     }
 
-    @GetMapping("/perfume/list")
+    @GetMapping("/perfume")
+    fun getPerfumes(
+        @ApiIgnore userAuth: UserAuth,
+        @PageableDefault pageable: Pageable,
+    ) : SeehyangResponse<List<PerfumeBasicInfoResponse>> {
+
+        val perfume = perfumeFacadeService.getPerfumes(userAuth,pageable)
+        return SeehyangResponse.success(perfume)
+    }
+
+    @GetMapping("/perfume/search")
     fun getPerfumesByName(
         @ApiIgnore userAuth: UserAuth,
         @RequestParam(value = "name") name: String,
         @PageableDefault pageable: Pageable
-    ): SeehyangResponse<List<PerfumeInfoResponse>> {
+    ): SeehyangResponse<List<PerfumeBasicInfoResponse>> {
 
         val perfumeInfos = perfumeFacadeService.getPerfumesByName(name,pageable)
 

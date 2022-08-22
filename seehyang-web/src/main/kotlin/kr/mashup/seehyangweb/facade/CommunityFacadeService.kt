@@ -6,6 +6,7 @@ import kr.mashup.seehyangweb.auth.UserAuth
 import kr.mashup.seehyangweb.common.NonTransactionalService
 import org.springframework.data.domain.Page
 import java.time.LocalDateTime
+import javax.validation.constraints.NotBlank
 
 @NonTransactionalService
 class CommunityFacadeService(
@@ -14,90 +15,100 @@ class CommunityFacadeService(
     private val perfumeService: PerfumeService
 ) {
 
-    fun getStoryDetail(storyId: Long, userAuth: UserAuth): StoryInfoResponse {
+    fun getStoryDetail(userAuth: UserAuth, storyId: Long): StoryDetailInfoResponse {
+
         val storyInfo = communityService.getStoryInfoByStoryId(storyId, userAuth.id)
-        val userInfo = userService.getByIdOrThrow(userAuth.id)
+        val likeCont = communityService.getActiveStoryLikeCount(storyId)
+        val userInfo = userService.getActiveUserByIdOrThrow(userAuth.id)
         val perfumeId = storyInfo.perfumeId
         val perfumeInfo = perfumeService.getByIdOrThrow(perfumeId)
 
-        return StoryInfoResponse.from(userInfo, perfumeInfo, storyInfo)
+        return StoryDetailInfoResponse.from(userInfo, perfumeInfo, storyInfo, likeCont)
     }
 
     fun getStoriesByPerfume(
-        perfumeId: Long,
         userAuth: UserAuth,
+        perfumeId: Long,
         storySortRequest: StorySortRequest
-    ): Page<StoryInfoResponse> {
-        val userInfo = userService.getByIdOrThrow(userAuth.id)
+    ): Page<StoryBasicInfoResponse> {
+
+        val userInfo = userService.getActiveUserByIdOrThrow(userAuth.id)
         val perfumeInfo = perfumeService.getByIdOrThrow(perfumeId)
 
         return communityService
             .getStoryInfoByPerfume(perfumeId, userAuth.id, storySortRequest)
-            .map { StoryInfoResponse.from(userInfo, perfumeInfo, it) }
+            .map { StoryBasicInfoResponse.from(userInfo, perfumeInfo, it) }
     }
 
     fun createStory(userAuth: UserAuth, request: StoryCreateRequest) {
+
         communityService.createStory(
             userAuth.id, request.perfumeId, request.imageId, request.viewType
         )
 
     }
 
-    fun likeStory(storyId: Long, userAuth: UserAuth) {
-        communityService.likeStory(storyId, userAuth.id)
+    fun likeStory(userAuth: UserAuth, storyId: Long) {
+
+        communityService.likeOrCancelStory(storyId, userAuth.id)
     }
 
     fun deleteStory(storyId: Long, userAuth: UserAuth) {
+
         communityService.deleteStory(storyId, userAuth.id)
     }
 
     fun getComments(
-        storyId: Long,
         userAuth: UserAuth,
+        storyId: Long,
         commentSortRequest: CommentSortRequest
     ): Page<CommentInfoResponse> {
+
         return communityService
-            .getComments(userAuth.id,storyId, commentSortRequest)
-            .map { CommentInfoResponse.from(userService.getByIdOrThrow(it.userId),it) }
+            .getComments(userAuth.id, storyId, commentSortRequest)
+            .map { CommentInfoResponse.from(userService.getActiveUserByIdOrThrow(it.userId), it) }
     }
 
     fun getReplyComments(
+        userAuth: UserAuth,
         storyId: Long,
         parentCommentId: Long,
-        userAuth: UserAuth,
         commentSortRequest: CommentSortRequest,
     ): Page<CommentInfoResponse> {
+
         return communityService
             .getReplyComments(userAuth.id, storyId, parentCommentId, commentSortRequest)
-            .map { CommentInfoResponse.from(userService.getByIdOrThrow(it.userId),it) }
+            .map { CommentInfoResponse.from(userService.getActiveUserByIdOrThrow(it.userId), it) }
     }
 
-    fun createComment(storyId: Long, userAuth: UserAuth, request: CommentCreateRequest) {
+    fun createComment(userAuth: UserAuth, storyId: Long, request: CommentCreateRequest) {
+
         communityService.createComment(storyId, userAuth.id, request.contents)
     }
 
     fun addReplyComment(
-        commentId: Long,
         userAuth: UserAuth,
+        commentId: Long,
         request: CommentCreateRequest
     ) {
         communityService.createReply(userAuth.id, commentId, request.contents)
     }
 
-    fun likeComment(commentId: Long, userAuth: UserAuth) {
+    fun likeComment(userAuth: UserAuth, commentId: Long) {
         communityService.likeComment(userAuth.id, commentId)
     }
 
-    fun dislikeComment(commentId: Long, userAuth: UserAuth) {
+    fun dislikeComment(userAuth: UserAuth, commentId: Long) {
         communityService.dislikeComment(userAuth.id, commentId)
     }
 
-    fun deleteComment(commentId: Long, userAuth: UserAuth) {
+    fun deleteComment(userAuth: UserAuth, commentId: Long) {
         communityService.deleteComments(userAuth.id, commentId)
     }
 }
 
-data class StoryInfoResponse(
+data class StoryBasicInfoResponse(
+    val id: Long,
     val userId: Long,
     val userNickname: String,
     val userProfileId: Long?,
@@ -109,10 +120,11 @@ data class StoryInfoResponse(
     val viewType: StoryViewType,
     val createdAt: LocalDateTime,
     val modifiedAt: LocalDateTime,
-) {
+){
     companion object {
-        fun from(userInfo: UserInfo, perfumeInfo: PerfumeInfo, storyInfo: StoryInfo): StoryInfoResponse {
-            return StoryInfoResponse(
+        fun from(userInfo: UserInfo, perfumeInfo: PerfumeInfo, storyInfo: StoryInfo): StoryBasicInfoResponse {
+            return StoryBasicInfoResponse(
+                id= storyInfo.id,
                 userId = userInfo.id!!,
                 userNickname = userInfo.nickname,
                 userProfileId = userInfo.profileUrlId,
@@ -122,6 +134,42 @@ data class StoryInfoResponse(
                 perfumeThumbnailId = perfumeInfo.thumbnailId,
                 storyImageId = storyInfo.imageId,
                 viewType = storyInfo.viewType,
+                createdAt = storyInfo.createdAt,
+                modifiedAt = storyInfo.modifiedAt
+            )
+        }
+    }
+}
+
+data class StoryDetailInfoResponse(
+    val id: Long,
+    val userId: Long,
+    val userNickname: String,
+    val userProfileId: Long?,
+    val perfumeId: Long,
+    val perfumeName: String,
+    val perfumeKoreanName: String,
+    val perfumeThumbnailId: Long,
+    val storyImageId: Long,
+    val viewType: StoryViewType,
+    val likeCount: Long,
+    val createdAt: LocalDateTime,
+    val modifiedAt: LocalDateTime,
+) {
+    companion object {
+        fun from(userInfo: UserInfo, perfumeInfo: PerfumeInfo, storyInfo: StoryInfo, likeCount:Long): StoryDetailInfoResponse {
+            return StoryDetailInfoResponse(
+                id= storyInfo.id,
+                userId = userInfo.id!!,
+                userNickname = userInfo.nickname,
+                userProfileId = userInfo.profileUrlId,
+                perfumeId = perfumeInfo.id,
+                perfumeName = perfumeInfo.name,
+                perfumeKoreanName = perfumeInfo.koreanName,
+                perfumeThumbnailId = perfumeInfo.thumbnailId,
+                storyImageId = storyInfo.imageId,
+                viewType = storyInfo.viewType,
+                likeCount = likeCount,
                 createdAt = storyInfo.createdAt,
                 modifiedAt = storyInfo.modifiedAt
             )
@@ -157,7 +205,7 @@ data class CommentInfoResponse(
             )
         }
 
-        fun from(userInfo:UserInfo, commentReplyInfo: CommentReplyInfo): CommentInfoResponse {
+        fun from(userInfo: UserInfo, commentReplyInfo: CommentReplyInfo): CommentInfoResponse {
             return CommentInfoResponse(
                 commentReplyInfo.id!!,
                 userInfo.id!!,
@@ -165,11 +213,14 @@ data class CommentInfoResponse(
                 userInfo.profileUrlId,
                 commentReplyInfo.contents,
                 commentReplyInfo.createdAt,
-                commentReplyInfo.updatedAt)
+                commentReplyInfo.updatedAt
+            )
         }
     }
 }
 
 data class CommentCreateRequest(
+
+    @NotBlank
     val contents: String
 )

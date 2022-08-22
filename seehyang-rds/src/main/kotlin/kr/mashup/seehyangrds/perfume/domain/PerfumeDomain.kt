@@ -5,6 +5,7 @@ import kr.mashup.seehyangcore.exception.BadRequestException
 import kr.mashup.seehyangcore.exception.InternalServerException
 import kr.mashup.seehyangcore.exception.NotFoundException
 import kr.mashup.seehyangrds.common.TransactionalService
+import kr.mashup.seehyangrds.common.checkIsPaged
 import kr.mashup.seehyangrds.perfume.entity.Perfume
 import kr.mashup.seehyangrds.perfume.entity.PerfumeLike
 import kr.mashup.seehyangrds.perfume.repo.PerfumeLikeRepository
@@ -29,33 +30,38 @@ class PerfumeDomain(
     }
 
     fun searchByName(name:String, pageable: Pageable): Page<Perfume> {
+        checkIsPaged(pageable)
         return perfumeRepository.findByNameOrKoreanName(name, pageable)
     }
 
-    fun likePerfume(perfumeId: Long, user: User) {
-        val perfume = perfumeRepository.findById(perfumeId).orElseThrow { PERFUME_NOT_FOUND_EXCEPTION }
-        if (perfumeLikeRepository.existsByPerfumeAndUser(perfume, user)) {
-            throw BadRequestException(ResultCode.INVALID_PERFUME_LIKE_REQUEST)
+    fun isLikedPerfume(perfume:Perfume, user:User):Boolean{
+        return perfumeLikeRepository.existsByPerfumeAndUser(perfume, user)
+    }
+
+    fun likePerfume(perfume:Perfume, user: User) {
+        val perfumeLike = perfumeLikeRepository.findByUserAndPerfume(user, perfume)
+        if (perfumeLike!=null) {
+            perfumeLikeRepository.delete(perfumeLike)
+        }else{
+            val perfumeLike = PerfumeLike(user, perfume)
+            perfumeLikeRepository.save(perfumeLike)
         }
-        val perfumeLike = PerfumeLike(user, perfume)
-        perfumeLikeRepository.save(perfumeLike)
     }
 
-    fun dislikePerfume(perfumeId: Long, user: User) {
-        val perfume = perfumeRepository.findById(perfumeId).orElseThrow { PERFUME_NOT_FOUND_EXCEPTION }
-        val perfumeLike = perfumeLikeRepository
-            .findByUserAndPerfume(user, perfume)?: throw BadRequestException(ResultCode.INVALID_PERFUME_LIKE_REQUEST)
 
-        perfumeLikeRepository.delete(perfumeLike)
-    }
-
-    fun getLikeCount(perfumeId: Long): Long {
-        val perfume = perfumeRepository.findById(perfumeId).orElseThrow { PERFUME_NOT_FOUND_EXCEPTION }
+    fun getLikeCount(perfume:Perfume): Long {
         return perfumeLikeRepository.countByPerfume(perfume)
     }
 
-    private fun isEnglishOrDigit(input: String): Boolean = Pattern.matches("^[a-zA-Z0-9]*$", input)
-    private fun isKoreanOrDigit(input: String): Boolean = Pattern.matches("^[ㄱ-ㅎ|가-힣|0-9|]+$", input)
+    fun getAll(pageable: Pageable): Page<Perfume> {
+        checkIsPaged(pageable)
+        return perfumeRepository.findAll(pageable)
+    }
+
+    /**
+     * Private
+     */
+
 
     private val PERFUME_NOT_FOUND_EXCEPTION = NotFoundException(ResultCode.NOT_FOUND_PERFUME)
 

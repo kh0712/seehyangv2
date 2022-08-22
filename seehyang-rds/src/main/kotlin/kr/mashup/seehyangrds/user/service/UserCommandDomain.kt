@@ -16,42 +16,57 @@ import javax.validation.constraints.NotBlank
 
 @Validated
 @TransactionalService
-class UserCommandService(
+class UserCommandDomain(
     val userRepository: UserRepository
 ) {
 
-    fun save(@Valid command: UserSaveCommand): User
-    = userRepository.save(User(nickname = command.nickname, email = command.email, gender = command.gender, password = command.password, age=command.age))
+    fun save(@Valid command: UserSaveCommand): User{
+        val existEmail = userRepository.existsByEmail(command.email)
+        if(existEmail){
+            throw BadRequestException(ResultCode.ALREADY_EXIST_USER)
+        }
+        return userRepository.save(
+            User(
+                nickname = command.nickname,
+                email = command.email,
+                gender = command.gender,
+                password = command.password,
+                age = command.age
+            )
+        )
+    }
 
-    fun changePassword(user: User, password: String){
-        if(!StringUtils.hasText(password)){
+    fun changePassword(user: User, password: String) {
+        if (!StringUtils.hasText(password)) {
             throw INVALID_PASSWORD_EXCEPTION
         }
         user.password = password
     }
 
-    fun changeStatus(user: User, status: UserStatus){
+    fun changeStatus(user: User, status: UserStatus) {
         user.status = status
     }
 
-    fun changeNickname(user: User, nickname:String){
-        if(!StringUtils.hasText(nickname)){
+    fun changeNickname(user: User, nickname: String) {
+        if (!StringUtils.hasText(nickname)) {
             throw INVALID_NICKNAME_EXCEPTION
         }
         user.nickname = nickname
     }
 
-    fun changeAge(user: User, age:Int){
+    fun changeAge(user: User, age: Int) {
         user.age = age
     }
-    fun changeGender(user:User, gender: Gender){
+
+    fun changeGender(user: User, gender: Gender) {
         user.gender = gender
     }
-    fun changeProfile(user:User, image: Image){
+
+    fun changeProfile(user: User, image: Image) {
         user.profile = image
     }
 
-    companion object{
+    companion object {
         val INVALID_PASSWORD_EXCEPTION = BadRequestException(ResultCode.INVALID_PASSWORD)
         val INVALID_NICKNAME_EXCEPTION = BadRequestException(ResultCode.INVALID_NICKNAME)
     }

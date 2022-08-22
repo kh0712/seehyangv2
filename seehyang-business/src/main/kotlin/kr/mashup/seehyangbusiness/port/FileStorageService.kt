@@ -2,7 +2,6 @@ package kr.mashup.seehyangbusiness.port
 
 import kr.mashup.seehyangcore.vo.StorageType
 import org.springframework.stereotype.Component
-import java.io.File
 import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
@@ -15,9 +14,8 @@ class FileStorageService : StorageService{
     private val fileStoragePath: Path = Paths.get("/Users/user/Desktop/upload").toAbsolutePath().normalize()
 
     override fun save(inputStream: InputStream, extension:String): StorageInfo {
-        //TODO 버그 우려
         val fileNamePrefix = UUID.randomUUID().toString()
-        val fileName = "${fileNamePrefix}.${extension}"
+        val fileName = "${fileNamePrefix}${extension}"
         val location = fileStoragePath.resolve(fileName)
         Files.copy(inputStream, location)
 

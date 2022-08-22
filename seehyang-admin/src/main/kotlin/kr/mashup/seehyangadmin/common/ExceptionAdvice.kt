@@ -1,5 +1,7 @@
-package kr.mashup.seehyangweb.common
+package kr.mashup.seehyangadmin.common
 
+import kr.mashup.seehyangadmin.EmptyResponse
+import kr.mashup.seehyangadmin.SeehyangResponse
 import kr.mashup.seehyangcore.exception.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

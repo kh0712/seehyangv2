@@ -1,9 +1,11 @@
 package kr.mashup.seehyangweb.config
 
+import kr.mashup.seehyangweb.config.converter.StoryViewTypeConverter
 import kr.mashup.seehyangweb.config.resolver.CommentSortRequestArgumentResolver
 import kr.mashup.seehyangweb.config.resolver.StorySortRequestArgumentResolver
 import kr.mashup.seehyangweb.config.resolver.UserArgumentResolver
 import org.springframework.context.annotation.Configuration
+import org.springframework.format.FormatterRegistry
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
@@ -19,5 +21,9 @@ class WebConfig(
         resolvers.add(storySortRequestArgumentResolver)
         resolvers.add(commentSortRequestArgumentResolver)
         super.addArgumentResolvers(resolvers)
+    }
+
+    override fun addFormatters(registry: FormatterRegistry) {
+        registry.addConverter(StoryViewTypeConverter())
     }
 }

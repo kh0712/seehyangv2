@@ -26,6 +26,7 @@ allOpen {
 }
 dependencies {
     implementation(project(":seehyang-core"))
+    implementation("mysql:mysql-connector-java")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.security:spring-security-crypto")

@@ -7,7 +7,8 @@ import kr.mashup.seehyangweb.common.EmptyResponse
 import kr.mashup.seehyangweb.common.SeehyangResponse
 import kr.mashup.seehyangweb.facade.StoryCreateRequest
 import kr.mashup.seehyangweb.facade.CommunityFacadeService
-import kr.mashup.seehyangweb.facade.StoryInfoResponse
+import kr.mashup.seehyangweb.facade.StoryBasicInfoResponse
+import kr.mashup.seehyangweb.facade.StoryDetailInfoResponse
 import org.springframework.web.bind.annotation.*
 import springfox.documentation.annotations.ApiIgnore
 import javax.validation.Valid
@@ -24,9 +25,9 @@ class StoryController(
     fun getStory(
         @ApiIgnore userAuth: UserAuth,
         @PathVariable("storyId") storyId: Long,
-    ): SeehyangResponse<StoryInfoResponse> {
+    ): SeehyangResponse<StoryDetailInfoResponse> {
 
-        val storyDto = communityFacadeService.getStoryDetail(storyId, userAuth)
+        val storyDto = communityFacadeService.getStoryDetail(userAuth, storyId)
         return SeehyangResponse.success(storyDto)
     }
 
@@ -39,8 +40,8 @@ class StoryController(
         @ApiIgnore userAuth: UserAuth,
         @PathVariable(value = "perfumeId") perfumeId: Long,
         storySortRequest: StorySortRequest,
-    ): SeehyangResponse<List<StoryInfoResponse>> {
-        val storyListDto = communityFacadeService.getStoriesByPerfume(perfumeId, userAuth, storySortRequest)
+    ): SeehyangResponse<List<StoryBasicInfoResponse>> {
+        val storyListDto = communityFacadeService.getStoriesByPerfume(userAuth, perfumeId, storySortRequest)
         return SeehyangResponse.success(storyListDto)
     }
 
@@ -51,7 +52,7 @@ class StoryController(
         @Valid @RequestBody createRequest: StoryCreateRequest,
     ): SeehyangResponse<EmptyResponse> {
 
-        val storyInfoResponse = communityFacadeService.createStory(userAuth, createRequest)
+        communityFacadeService.createStory(userAuth, createRequest)
         return SeehyangResponse.success()
     }
 
@@ -62,7 +63,7 @@ class StoryController(
         @PathVariable("storyId") storyId: Long,
     ): SeehyangResponse<EmptyResponse> {
 
-        communityFacadeService.likeStory(storyId, userAuth)
+        communityFacadeService.likeStory(userAuth,storyId)
         return SeehyangResponse.success()
     }
 

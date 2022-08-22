@@ -11,4 +11,6 @@ interface StoryLikeRepository : JpaRepository<StoryLike, Long> {
 
     fun deleteByUserAndStory(user: User, story: Story)
 
+    fun countByStory(story:Story): Long
+
 }

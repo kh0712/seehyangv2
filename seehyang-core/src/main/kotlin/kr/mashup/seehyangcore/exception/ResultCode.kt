@@ -9,13 +9,13 @@ enum class ResultCode(
     INVALID_CURSOR_PARAMETER(4001, "You need like cursor and id cursor both."),
     INVALID_PAGING_PARAMETER(0,"invalid paging param"),
     INVALID_IMAGE(0, "invalid image format"),
-
+    BAD_REQUEST(0," bad request"),
     // user
     NOT_FOUND_USER(4040, "The user does not exist."),
     ALREADY_EXIST_USER(4002, "Already exist user."),
     INVALID_NICKNAME(4006,"Nickname must be English or Korean or Number"),
     INVALID_EMAIL(4007,"Invalid Email"),
-    INVALID_PASSWORD(0,"비밀번호는 비어있을 수 없습니다."),
+    INVALID_PASSWORD(0,"wrong password"),
 
     // perfume
     INVALID_PERFUME_ID(0, "invalid perfume id"),
@@ -51,7 +51,9 @@ enum class ResultCode(
     ALREADY_EXIST_IMAGE(0, "already exist image"),
     ALREADY_EXIST_STORYLIKE(0,"already exist story like"),
     UNAUTHORIZED(0, "unauthorized"),
-    FORBIDDEN(0, "forbidden");
+    FORBIDDEN(0, "forbidden"),
+    ALREADY_EXIST_NICKNAME(0, "already exist nickname"),
+    UNPAGED_ERROR(0, "should paged");
 
 
     companion object {

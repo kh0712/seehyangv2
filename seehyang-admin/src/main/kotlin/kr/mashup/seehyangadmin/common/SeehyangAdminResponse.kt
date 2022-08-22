@@ -1,4 +1,4 @@
-package kr.mashup.seehyangweb.common
+package kr.mashup.seehyangadmin
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.annotation.JsonSerialize

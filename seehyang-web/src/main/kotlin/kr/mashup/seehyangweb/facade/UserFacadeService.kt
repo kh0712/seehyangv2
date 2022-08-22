@@ -5,6 +5,9 @@ import kr.mashup.seehyangbusiness.business.UserService
 import kr.mashup.seehyangcore.vo.Gender
 import kr.mashup.seehyangweb.auth.UserAuth
 import kr.mashup.seehyangweb.common.NonTransactionalService
+import javax.validation.constraints.Email
+import javax.validation.constraints.Min
+import javax.validation.constraints.NotBlank
 
 @NonTransactionalService
 class UserFacadeService(
@@ -12,7 +15,7 @@ class UserFacadeService(
 ) {
 
     fun getUser(userAuth: UserAuth): UserInfoResponse {
-        val userInfo: UserInfo = userService.getByIdOrThrow(id = userAuth.id)
+        val userInfo: UserInfo = userService.getActiveUserByIdOrThrow(id = userAuth.id)
         return UserInfoResponse.from(userInfo)
     }
 
@@ -25,7 +28,7 @@ class UserFacadeService(
         val (nickname, age, gender) = registerUserDetailRequest.copy()
         userService.changeUserDetail(id = userAuth.id, age = age, nickname = nickname, gender = gender)
 
-        val userInfo: UserInfo = userService.getByIdOrThrow(id = userAuth.id)
+        val userInfo: UserInfo = userService.getActiveUserByIdOrThrow(id = userAuth.id)
 
         return UserInfoResponse.from(userInfo)
     }
@@ -44,7 +47,7 @@ class UserFacadeService(
 
     fun changeProfileImage(userAuth: UserAuth, profileUpdateRequest: ProfileUpdateRequest): UserInfoResponse {
         userService.changeProfile(userAuth.id, profileUpdateRequest.imageId)
-        val userInfo: UserInfo = userService.getByIdOrThrow(id = userAuth.id)
+        val userInfo: UserInfo = userService.getActiveUserByIdOrThrow(id = userAuth.id)
         return UserInfoResponse.from(userInfo)
     }
 }
@@ -60,9 +63,13 @@ data class ProfileUpdateRequest(
 )
 
 data class SignUpRequest(
+    @Email(message="올바른 이메일 형식이어야 합니다.")
     val email: String,
+    @NotBlank
     val password: String,
+    @NotBlank
     val nickname: String,
+    @Min(1)
     val age: Int,
     val gender: Gender,
 )
@@ -92,6 +99,7 @@ data class SignUpResponse(
 )
 
 data class WithdrawRequest(
+    @NotBlank
     val password: String
 )
 

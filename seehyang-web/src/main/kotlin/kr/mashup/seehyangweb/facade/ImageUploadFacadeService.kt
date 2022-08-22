@@ -28,7 +28,7 @@ class ImageUploadFacadeService(
     }
 
     fun download(imageId:Long): ImageDownloadResponse{
-        val imageInfo = imageService.getImage(imageId)
+        val imageInfo = imageService.getActiveImage(imageId)
         return if(imageInfo.type== StorageType.LOCAL){
             val readAllBytes = Files.readAllBytes(Path.of(imageInfo.url))
             ImageDownloadResponse(readAllBytes)

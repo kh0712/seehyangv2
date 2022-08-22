@@ -31,6 +31,7 @@ class Story(
     var viewType: StoryViewType = viewType
         internal set
 
+    @Enumerated(EnumType.STRING)
     var status:StoryStatus = StoryStatus.ACTIVE
         internal set
 }

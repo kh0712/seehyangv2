@@ -6,7 +6,6 @@ import kr.mashup.seehyangweb.common.ApiV1
 import kr.mashup.seehyangweb.common.SeehyangResponse
 import kr.mashup.seehyangweb.facade.*
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestParam
 import springfox.documentation.annotations.ApiIgnore
 
 @ApiV1
@@ -17,6 +16,7 @@ class HomeController(
     fun today(
         @ApiIgnore userAuth: UserAuth
     ): SeehyangResponse<TodaySeehyangResponse> {
+
         val todaySeehyangResponse = homeFacadeService.todaySeehyang()
         return SeehyangResponse.success(todaySeehyangResponse)
     }
@@ -24,7 +24,7 @@ class HomeController(
     @GetMapping("/home/hot")
     fun hotStory(
         @ApiIgnore userAuth: UserAuth
-    ): SeehyangResponse<List<StoryInfoResponse>> {
+    ): SeehyangResponse<List<StoryBasicInfoResponse>> {
 
         val hotStories = homeFacadeService.hotStory()
         return SeehyangResponse.success(hotStories)

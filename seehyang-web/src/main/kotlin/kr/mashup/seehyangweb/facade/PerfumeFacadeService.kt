@@ -13,29 +13,60 @@ class PerfumeFacadeService(
     private val communityService: CommunityService,
     private val perfumeService: PerfumeService,
 ) {
-    fun getPerfume(perfumeId: Long, userAuth: UserAuth): PerfumeInfoResponse {
+    fun getPerfume(userAuth: UserAuth, perfumeId: Long): PerfumeDetailInfoResponse {
 
         val perfumeInfo = perfumeService.getByIdOrThrow(perfumeId)
         val likeCount = perfumeService.getLikeCountById(perfumeId)
         val storyCount = communityService.getStoryCountByPerfume(perfumeId)
 
-        return PerfumeInfoResponse.from(perfumeInfo, likeCount, storyCount)
+        return PerfumeDetailInfoResponse.from(perfumeInfo, likeCount, storyCount)
     }
 
-    fun getPerfumesByName(name: String, pageable: Pageable): Page<PerfumeInfoResponse> {
+    fun getPerfumes(userAuth: UserAuth, pageable: Pageable): Page<PerfumeBasicInfoResponse> {
+        return perfumeService.getAll(pageable).map {
+            PerfumeBasicInfoResponse.from(it)
+        }
+    }
+
+    fun getPerfumesByName(name: String, pageable: Pageable): Page<PerfumeBasicInfoResponse> {
         return perfumeService
             .searchByPerfumeName(name, pageable)
-            .map { PerfumeInfoResponse.from(it,perfumeService.getLikeCountById(it.id),
-                                            communityService.getStoryCountByPerfume(it.id) ) }
+            .map {
+                PerfumeBasicInfoResponse.from(it)
+            }
     }
 
     fun likePerfume(perfumeId: Long, userAuth: UserAuth) {
-        perfumeService.likePerfume(userAuth.id,perfumeId)
+        perfumeService.likePerfume(userAuth.id, perfumeId)
     }
 }
 
-data class PerfumeInfoResponse(
-    val id:Long,
+data class PerfumeBasicInfoResponse(
+    val id: Long,
+    val name: String,
+    val koreanName: String,
+    val type: PerfumeType,
+    val gender: Gender,
+    val thumbnailId: Long,
+    val brand: BrandInfo,
+){
+    companion object {
+        fun from(perfumeInfo: PerfumeInfo): PerfumeBasicInfoResponse {
+            return PerfumeBasicInfoResponse(
+                id = perfumeInfo.id,
+                name = perfumeInfo.name,
+                koreanName = perfumeInfo.koreanName,
+                type = perfumeInfo.type,
+                gender = perfumeInfo.gender,
+                thumbnailId = perfumeInfo.thumbnailId,
+                brand = perfumeInfo.brand
+            )
+        }
+    }
+}
+
+data class PerfumeDetailInfoResponse(
+    val id: Long,
     val name: String,
     val koreanName: String,
     val type: PerfumeType,
@@ -46,11 +77,22 @@ data class PerfumeInfoResponse(
     val notes: List<NoteInfo>,
     val likeCount: Long,
     val storyCount: Long,
-){
-    companion object{
-        fun from(perfumeInfo: PerfumeInfo, likeCount: Long, storyCount:Long):PerfumeInfoResponse{
-            val (id, name, koreanName, type, gender, thumbnailId, brand, accords, notes) = perfumeInfo.copy()
-            return PerfumeInfoResponse(id,name,koreanName,type,gender,thumbnailId,brand,accords,notes,likeCount, storyCount)
+) {
+    companion object {
+        fun from(perfumeInfo: PerfumeInfo, likeCount: Long, storyCount: Long): PerfumeDetailInfoResponse {
+            return PerfumeDetailInfoResponse(
+                id = perfumeInfo.id,
+                name = perfumeInfo.name,
+                koreanName = perfumeInfo.koreanName,
+                type = perfumeInfo.type,
+                gender = perfumeInfo.gender,
+                thumbnailId = perfumeInfo.thumbnailId,
+                brand = perfumeInfo.brand,
+                accords = perfumeInfo.accords,
+                notes = perfumeInfo.notes,
+                likeCount = likeCount,
+                storyCount = storyCount
+            )
         }
     }
 }

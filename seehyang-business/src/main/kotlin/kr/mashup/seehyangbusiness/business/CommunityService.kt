@@ -18,7 +18,6 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @TransactionalService
@@ -35,12 +34,18 @@ class CommunityService(
         val size = storySortRequest.size ?: 10
         val pageRequest = PageRequest.of(page, size, direction, sortBy.fieldName)
 
-        return storyDomain.getPublicStories(pageRequest).map { StoryInfo.from(it) }
+        return if (sortBy == StorySortBy.ID || sortBy == StorySortBy.RECENT) {
+            val pageRequest = PageRequest.of(page, size, direction, sortBy.fieldName)
+            storyDomain.getPublicStories(pageRequest)
+        } else {
+            val pageRequest = PageRequest.of(page, size)
+            storyDomain.getPublicStoriesOrderByLike(pageRequest)
+        }.map { StoryInfo.from(it) }
     }
 
     fun getStoryInfoByStoryId(storyId: Long, userId: Long): StoryInfo {
 
-        val user = userQueryDomain.getByIdOrThrow(userId)
+        val user = userQueryDomain.getActiveByIdOrThrow(userId)
         val story = storyDomain.getActiveStoryByIdOrThrow(storyId)
 
         val accessibility = story.viewType
@@ -62,7 +67,7 @@ class CommunityService(
     fun getStoryInfoByPerfume(perfumeId: Long, userId: Long, storySortRequest: StorySortRequest): Page<StoryInfo> {
 
         val perfume = perfumeDomain.getByIdOrThrow(perfumeId)
-        val user = userQueryDomain.getByIdOrThrow(userId)
+        val user = userQueryDomain.getActiveByIdOrThrow(userId)
         val sortBy = storySortRequest.sortBy ?: StorySortBy.ID
         val direction = storySortRequest.direction ?: Sort.Direction.DESC
         val page = storySortRequest.page ?: 0
@@ -81,12 +86,15 @@ class CommunityService(
 
     fun createStory(userId: Long, perfumeId: Long, imageId: Long, viewType: StoryViewType): StoryInfo {
 
-        val user = userQueryDomain.getByIdOrThrow(userId)
+        val user = userQueryDomain.getActiveByIdOrThrow(userId)
         val perfume = perfumeDomain.getByIdOrThrow(perfumeId)
         val image = imageDomain.getByIdOrThrow(imageId)
 
         if (image.status != ImageStatus.PENDING) {
             throw BadRequestException(ResultCode.ALREADY_EXIST_IMAGE)
+        }
+        if(image.uploader.id!! != user.id ){
+            throw NotFoundException(ResultCode.NOT_FOUND_IMAGE)
         }
         imageDomain.changeStatus(image, ImageStatus.ACTIVE)
         val story = storyDomain.saveStory(StorySaveCommand(user, perfume, image, viewType))
@@ -94,14 +102,14 @@ class CommunityService(
         return StoryInfo.from(story)
     }
 
-    fun likeStory(storyId: Long, userId: Long) {
-        val user = userQueryDomain.getByIdOrThrow(userId)
+    fun likeOrCancelStory(storyId: Long, userId: Long) {
+        val user = userQueryDomain.getActiveByIdOrThrow(userId)
         val story = storyDomain.getActiveStoryByIdOrThrow(storyId)
-        storyDomain.likeStory(user, story)
+        storyDomain.likeOrCancelStory(user, story)
     }
 
     fun deleteStory(storyId: Long, userId: Long) {
-        val user = userQueryDomain.getByIdOrThrow(userId)
+        val user = userQueryDomain.getActiveByIdOrThrow(userId)
         val story = storyDomain.getActiveStoryByIdOrThrow(storyId)
         if (story.user != user) {
             throw BadRequestException(ResultCode.NOT_FOUND_STORY)
@@ -111,7 +119,7 @@ class CommunityService(
 
     fun createComment(storyId: Long, userId: Long, contents: String): CommentInfo {
         val story = storyDomain.getActiveStoryByIdOrThrow(storyId)
-        val user = userQueryDomain.getByIdOrThrow(userId)
+        val user = userQueryDomain.getActiveByIdOrThrow(userId)
         return CommentInfo.from(storyDomain.createComment(user, story, contents))
     }
 
@@ -136,7 +144,7 @@ class CommunityService(
     }
 
     fun deleteComments(userId: Long, commentId: Long) {
-        val user = userQueryDomain.getByIdOrThrow(userId)
+        val user = userQueryDomain.getActiveByIdOrThrow(userId)
         val comment = storyDomain.getActiveComment(commentId)
         if (user != comment.user) {
             throw BadRequestException(ResultCode.NOT_FOUND_COMMENT)
@@ -145,25 +153,33 @@ class CommunityService(
     }
 
     fun createReply(userId:Long, commentId: Long, contents: String):CommentReplyInfo{
-        val user = userQueryDomain.getByIdOrThrow(userId)
-        val commentReply = storyDomain.createReply(user, commentId, contents)
+        val user = userQueryDomain.getActiveByIdOrThrow(userId)
+        val comment = storyDomain.getActiveComment(commentId)
+        val commentReply = storyDomain.createReply(user, comment, contents)
 
         return CommentReplyInfo.from(commentReply)
     }
 
     fun likeComment(userId: Long, commentId: Long) {
-        val user = userQueryDomain.getByIdOrThrow(userId)
-        storyDomain.likeComment(user, commentId)
+        val user = userQueryDomain.getActiveByIdOrThrow(userId)
+        val comment = storyDomain.getActiveComment(commentId)
+
+        storyDomain.likeComment(user, comment)
     }
 
     fun dislikeComment(userId: Long, commentId: Long) {
-        val user = userQueryDomain.getByIdOrThrow(userId)
-        storyDomain.dislikeComment(user, commentId)
+        val user = userQueryDomain.getActiveByIdOrThrow(userId)
+        val comment = storyDomain.getActiveComment(commentId)
+
+        storyDomain.dislikeComment(user, comment)
     }
 
     fun getReplyComments(userId:Long, storyId: Long,parentCommentId:Long, commentSortRequest: CommentSortRequest): Page<CommentReplyInfo> {
 
         val story = storyDomain.getActiveStoryByIdOrThrow(storyId)
+        val comment = storyDomain.getActiveComment(parentCommentId)
+
+
         if(story.viewType == StoryViewType.ONLYME && userId != story.user.id!!){
             throw NotFoundException(ResultCode.NOT_FOUND_STORY)
         }
@@ -172,18 +188,17 @@ class CommunityService(
         val direction = commentSortRequest.direction ?: Sort.Direction.DESC
         val page = commentSortRequest.page ?: 0
         val size = commentSortRequest.size ?: 10
-
         return if (sortBy == CommentSortBy.ID || sortBy == CommentSortBy.RECENT) {
             val pageRequest = PageRequest.of(page, size, direction, sortBy.fieldName)
-            storyDomain.getActiveReplies(parentCommentId, pageRequest)
+            storyDomain.getActiveReplies(comment, pageRequest)
         } else {
             val pageRequest = PageRequest.of(page, size)
-            storyDomain.getActiveReplies(parentCommentId, pageRequest)
+            storyDomain.getActiveReplies(comment, pageRequest)
         }.map { CommentReplyInfo.from(it) }
     }
 
 
-    fun getMostStoriesPerfumes(from: LocalDate, to: LocalDate, pageable: Pageable): List<PerfumeInfo> {
+    fun getMostStoriesPerfumes(from: LocalDateTime, to: LocalDateTime, pageable: Pageable): List<PerfumeInfo> {
         return storyDomain
             .getPerfumeIdsByMostStories(from, to, pageable)
             .map{perfumeDomain.getByIdOrThrow(it)}
@@ -202,6 +217,11 @@ class CommunityService(
         return storyDomain.getActiveStoryCountByPerfume(perfume)
     }
 
+    fun getActiveStoryLikeCount(storyId: Long):Long {
+        val story = storyDomain.getActiveStoryByIdOrThrow(storyId)
+        return storyDomain.getLikeCount(story)
+    }
+
 
 }
 
@@ -217,13 +237,13 @@ data class StoryInfo(
     companion object {
         fun from(story: Story): StoryInfo {
             return StoryInfo(
-                story.id!!,
-                story.user.id!!,
-                story.perfume.id!!,
-                story.image.id!!,
-                story.viewType,
-                story.createdAt,
-                story.updatedAt
+                id = story.id!!,
+                userId = story.user.id!!,
+                perfumeId = story.perfume.id!!,
+                imageId = story.image.id!!,
+                viewType = story.viewType,
+                createdAt = story.createdAt,
+                modifiedAt = story.updatedAt
             )
         }
     }
@@ -253,7 +273,14 @@ data class CommentInfo(
 ) {
     companion object {
         fun from(comment: Comment): CommentInfo {
-            return CommentInfo(comment.id!!, comment.user.id!!, comment.story.id!!, comment.contents, comment.createdAt, comment.updatedAt)
+            return CommentInfo(
+                id = comment.id!!,
+                userId = comment.user.id!!,
+                storyId = comment.story.id!!,
+                contents = comment.contents,
+                createdAt = comment.createdAt,
+                updatedAt = comment.updatedAt
+            )
         }
     }
 }
@@ -267,7 +294,14 @@ data class CommentReplyInfo(
 ) {
     companion object {
         fun from(commentReply: CommentReply): CommentReplyInfo {
-            return CommentReplyInfo(commentReply.id!!, commentReply.user.id!!, commentReply.comment.id!!, commentReply.contents, commentReply.createdAt, commentReply.updatedAt)
+            return CommentReplyInfo(
+                id = commentReply.id!!,
+                userId = commentReply.user.id!!,
+                parentId = commentReply.comment.id!!,
+                contents = commentReply.contents,
+                createdAt = commentReply.createdAt,
+                updatedAt = commentReply.updatedAt
+            )
         }
     }
 }

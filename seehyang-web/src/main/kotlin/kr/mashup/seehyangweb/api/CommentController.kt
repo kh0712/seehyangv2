@@ -20,11 +20,10 @@ class CommentController(
     fun getComments(
         @ApiIgnore userAuth: UserAuth,
         @PathVariable(value = "storyId") storyId: Long,
-        @RequestParam(value = "cursor", required = false) cursor: Long? = null,
         commentSortRequest: CommentSortRequest
     ): SeehyangResponse<List<CommentInfoResponse>> {
 
-        val commentsDto = communityFacadeService.getComments(storyId, userAuth, commentSortRequest)
+        val commentsDto = communityFacadeService.getComments(userAuth, storyId, commentSortRequest)
 
         return SeehyangResponse.success(commentsDto)
     }
@@ -38,11 +37,11 @@ class CommentController(
         commentSortRequest: CommentSortRequest
     ): SeehyangResponse<List<CommentInfoResponse>> {
 
-        val replyComments = communityFacadeService.getReplyComments(storyId, parentCommentId, userAuth, commentSortRequest)
+        val replyComments =
+            communityFacadeService.getReplyComments(userAuth, storyId, parentCommentId, commentSortRequest)
 
         return SeehyangResponse.success(replyComments)
     }
-
 
 
     @PostMapping("/story/{storyId}/comment")
@@ -52,7 +51,7 @@ class CommentController(
         @Valid @RequestBody request: CommentCreateRequest,
     ): SeehyangResponse<EmptyResponse> {
 
-        communityFacadeService.createComment(storyId, userAuth, request)
+        communityFacadeService.createComment(userAuth, storyId, request)
 
         return SeehyangResponse.success()
     }
@@ -66,7 +65,7 @@ class CommentController(
         @Valid @RequestBody request: CommentCreateRequest,
     ): SeehyangResponse<EmptyResponse> {
 
-        communityFacadeService.addReplyComment(commentId, userAuth, request)
+        communityFacadeService.addReplyComment(userAuth, commentId, request)
 
         return SeehyangResponse.success()
     }
@@ -78,7 +77,7 @@ class CommentController(
         @PathVariable(value = "commentId") commentId: Long
     ): SeehyangResponse<EmptyResponse> {
 
-        communityFacadeService.likeComment(commentId, userAuth)
+        communityFacadeService.likeComment(userAuth, commentId)
 
         return SeehyangResponse.success()
     }
@@ -90,7 +89,7 @@ class CommentController(
         @PathVariable(value = "commentId") commentId: Long
     ): SeehyangResponse<EmptyResponse> {
 
-        communityFacadeService.dislikeComment(commentId, userAuth)
+        communityFacadeService.dislikeComment(userAuth, commentId)
 
         return SeehyangResponse.success()
     }
@@ -103,7 +102,7 @@ class CommentController(
         @PathVariable(value = "commentId") commentId: Long,
     ): SeehyangResponse<EmptyResponse> {
 
-        communityFacadeService.deleteComment(commentId,userAuth)
+        communityFacadeService.deleteComment(userAuth, commentId)
 
         return SeehyangResponse.success()
     }
