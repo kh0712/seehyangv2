@@ -1,7 +1,7 @@
 package kr.mashup.seehyangadmin.common
 
 import kr.mashup.seehyangadmin.EmptyResponse
-import kr.mashup.seehyangadmin.SeehyangResponse
+import kr.mashup.seehyangadmin.SeehyangAdminResponse
 import kr.mashup.seehyangcore.exception.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -26,23 +26,23 @@ class ExceptionAdvice {
      */
     @ExceptionHandler(HttpMediaTypeException::class)
     @ResponseStatus(HttpStatus.OK)
-    fun handleHttpMediaTypeException(e: HttpMediaTypeException): SeehyangResponse<EmptyResponse> {
+    fun handleHttpMediaTypeException(e: HttpMediaTypeException): SeehyangAdminResponse<EmptyResponse> {
         log.info("handleHttpMediaTypeException: {}", e.message ?: "", e)
-        return SeehyangResponse.fail(ResultCode.BAD_REQUEST, e.message ?: "")
+        return SeehyangAdminResponse.fail(ResultCode.BAD_REQUEST, e.message ?: "")
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException::class)
     @ResponseStatus(HttpStatus.OK)
-    fun handleMethodArgumentTypeMismatchException(e: MethodArgumentTypeMismatchException): SeehyangResponse<EmptyResponse> {
+    fun handleMethodArgumentTypeMismatchException(e: MethodArgumentTypeMismatchException): SeehyangAdminResponse<EmptyResponse> {
         log.info("handleMethodArgumentTypeMismatchException: {}", e.message ?: "", e)
-        return SeehyangResponse.fail(ResultCode.BAD_REQUEST, e.message ?: "")
+        return SeehyangAdminResponse.fail(ResultCode.BAD_REQUEST, e.message ?: "")
     }
 
     @ExceptionHandler(HttpMessageNotReadableException::class)
     @ResponseStatus(HttpStatus.OK)
-    fun handleHttpMessageNotReadableException(e: HttpMessageNotReadableException): SeehyangResponse<EmptyResponse> {
+    fun handleHttpMessageNotReadableException(e: HttpMessageNotReadableException): SeehyangAdminResponse<EmptyResponse> {
         log.info("handleHttpMessageNotReadableException: {}", e.message ?: "", e)
-        return SeehyangResponse.fail(ResultCode.BAD_REQUEST, e.message ?: "")
+        return SeehyangAdminResponse.fail(ResultCode.BAD_REQUEST, e.message ?: "")
     }
 
     /**
@@ -50,60 +50,60 @@ class ExceptionAdvice {
      */
     @ExceptionHandler(MethodArgumentNotValidException::class)
     @ResponseStatus(HttpStatus.OK)
-    fun handleMethodArgumentNotValidException(e: MethodArgumentNotValidException): SeehyangResponse<EmptyResponse> {
+    fun handleMethodArgumentNotValidException(e: MethodArgumentNotValidException): SeehyangAdminResponse<EmptyResponse> {
         log.info("handleMethodArgumentNotValidException: {}", e.message ?: "", e)
-        return SeehyangResponse.fail(ResultCode.BAD_REQUEST, e.bindingResult.allErrors[0].defaultMessage ?: "")
+        return SeehyangAdminResponse.fail(ResultCode.BAD_REQUEST, e.bindingResult.allErrors[0].defaultMessage ?: "")
     }
 
 
     @ExceptionHandler(IllegalArgumentException::class)
     @ResponseStatus(HttpStatus.OK)
-    fun handleIllegalArgumentException(e: IllegalArgumentException): SeehyangResponse<EmptyResponse> {
+    fun handleIllegalArgumentException(e: IllegalArgumentException): SeehyangAdminResponse<EmptyResponse> {
         log.info("handleIllegalArgumentException: {}", e.message ?: "", e)
-        return SeehyangResponse.fail(ResultCode.BAD_REQUEST, e.message ?: "")
+        return SeehyangAdminResponse.fail(ResultCode.BAD_REQUEST, e.message ?: "")
     }
 
     @ExceptionHandler(BadRequestException::class)
     @ResponseStatus(HttpStatus.OK)
-    fun handleBadRequestException(e: BadRequestException): SeehyangResponse<EmptyResponse> {
+    fun handleBadRequestException(e: BadRequestException): SeehyangAdminResponse<EmptyResponse> {
         log.info("handleBadRequestException: {}", e.message ?: "", e)
-        return SeehyangResponse.fail(e.code, e.message ?: "")
+        return SeehyangAdminResponse.fail(e.code, e.message ?: "")
     }
 
     @ExceptionHandler(UnauthorizedException::class)
     @ResponseStatus(HttpStatus.OK)
-    fun handleUnauthorizedException(e: UnauthorizedException): SeehyangResponse<EmptyResponse> {
+    fun handleUnauthorizedException(e: UnauthorizedException): SeehyangAdminResponse<EmptyResponse> {
         log.info("handleUnauthorizedException: {}", e.message ?: "", e)
-        return SeehyangResponse.fail(e.code, e.message)
+        return SeehyangAdminResponse.fail(e.code, e.message)
     }
 
 
     @ExceptionHandler(NotFoundException::class)
     @ResponseStatus(HttpStatus.OK)
-    fun handleNotFoundException(e: NotFoundException): SeehyangResponse<EmptyResponse> {
+    fun handleNotFoundException(e: NotFoundException): SeehyangAdminResponse<EmptyResponse> {
         log.info("handleNotFoundException: {}", e.message, e)
-        return SeehyangResponse.fail(e.code, e.message)
+        return SeehyangAdminResponse.fail(e.code, e.message)
     }
 
     @ExceptionHandler(InternalServerException::class)
     @ResponseStatus(HttpStatus.OK)
-    fun handleInternalServerErrorException(e: InternalServerException): SeehyangResponse<EmptyResponse> {
+    fun handleInternalServerErrorException(e: InternalServerException): SeehyangAdminResponse<EmptyResponse> {
         log.info("handleInternalServerErrorException: {}", e.message, e)
-        return SeehyangResponse.fail(e.code, e.message)
+        return SeehyangAdminResponse.fail(e.code, e.message)
     }
 
     @ExceptionHandler(ServiceUnavailableException::class)
     @ResponseStatus(HttpStatus.OK)
-    fun handleServiceUnavailableException(e: ServiceUnavailableException): SeehyangResponse<EmptyResponse> {
+    fun handleServiceUnavailableException(e: ServiceUnavailableException): SeehyangAdminResponse<EmptyResponse> {
         log.info("handleServiceUnavailableException: {}", e.message ?: "", e)
-        return SeehyangResponse.fail(ResultCode.INTERNAL_SERVER_ERROR.code, e.message?:"")
+        return SeehyangAdminResponse.fail(ResultCode.INTERNAL_SERVER_ERROR.code, e.message?:"")
     }
 
     @ExceptionHandler(Exception::class)
     @ResponseStatus(HttpStatus.OK)
-    fun handleException(e: Exception): SeehyangResponse<*>? {
+    fun handleException(e: Exception): SeehyangAdminResponse<*>? {
         log.error("handleException: {}", e.message ?: "", e)
-        return SeehyangResponse.fail(ResultCode.INTERNAL_SERVER_ERROR)
+        return SeehyangAdminResponse.fail(ResultCode.INTERNAL_SERVER_ERROR)
     }
 
 }

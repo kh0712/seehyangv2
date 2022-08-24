@@ -6,7 +6,7 @@ import kr.mashup.seehyangcore.exception.ResultCode
 import org.springframework.data.domain.Page
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class SeehyangResponse<T>(
+data class SeehyangAdminResponse<T>(
     val data: T,
     val code: Int,
     val message: String,
@@ -15,30 +15,30 @@ data class SeehyangResponse<T>(
 ) {
     companion object {
 
-        fun success(): SeehyangResponse<EmptyResponse> {
-            return SeehyangResponse(EmptyResponse(), ResultCode.OK.code, ResultCode.OK.message,null)
+        fun success(): SeehyangAdminResponse<EmptyResponse> {
+            return SeehyangAdminResponse(EmptyResponse(), ResultCode.OK.code, ResultCode.OK.message, null)
         }
 
-        fun <T> success(data: T): SeehyangResponse<T> {
-            return SeehyangResponse(data, ResultCode.OK.code, ResultCode.OK.message,null)
+        fun <T> success(data: T): SeehyangAdminResponse<T> {
+            return SeehyangAdminResponse(data, ResultCode.OK.code, ResultCode.OK.message, null)
         }
-        fun <T> success(data: List<T>): SeehyangResponse<List<T>> {
-            return SeehyangResponse(data, ResultCode.OK.code, ResultCode.OK.message,null)
-        }
-
-        fun <T> success(data: Page<T>): SeehyangResponse<List<T>> {
-            return SeehyangResponse(data.content, ResultCode.OK.code, ResultCode.OK.message, PageResponse.from(data))
+        fun <T> success(data: List<T>): SeehyangAdminResponse<List<T>> {
+            return SeehyangAdminResponse(data, ResultCode.OK.code, ResultCode.OK.message, null)
         }
 
-        fun fail(resultCode: ResultCode): SeehyangResponse<EmptyResponse> {
-            return SeehyangResponse(EmptyResponse(), resultCode.code, resultCode.message,null)
+        fun <T> success(data: Page<T>): SeehyangAdminResponse<List<T>> {
+            return SeehyangAdminResponse(data.content, ResultCode.OK.code, ResultCode.OK.message, PageResponse.from(data))
         }
 
-        fun fail(resultCode: ResultCode, message: String): SeehyangResponse<EmptyResponse> {
-            return SeehyangResponse(EmptyResponse(), resultCode.code, message, null)
+        fun fail(resultCode: ResultCode): SeehyangAdminResponse<EmptyResponse> {
+            return SeehyangAdminResponse(EmptyResponse(), resultCode.code, resultCode.message, null)
         }
-        fun fail(code:Int, message: String): SeehyangResponse<EmptyResponse> {
-            return SeehyangResponse(EmptyResponse(), code, message, null)
+
+        fun fail(resultCode: ResultCode, message: String): SeehyangAdminResponse<EmptyResponse> {
+            return SeehyangAdminResponse(EmptyResponse(), resultCode.code, message, null)
+        }
+        fun fail(code:Int, message: String): SeehyangAdminResponse<EmptyResponse> {
+            return SeehyangAdminResponse(EmptyResponse(), code, message, null)
         }
     }
 }

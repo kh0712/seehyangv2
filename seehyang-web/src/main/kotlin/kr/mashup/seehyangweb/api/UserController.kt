@@ -5,6 +5,8 @@ import kr.mashup.seehyangweb.common.ApiV1
 import kr.mashup.seehyangweb.common.EmptyResponse
 import kr.mashup.seehyangweb.common.SeehyangResponse
 import kr.mashup.seehyangweb.facade.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
 import springfox.documentation.annotations.ApiIgnore
 import javax.validation.Valid
@@ -13,6 +15,7 @@ import javax.validation.Valid
 class UserController(
     private val userFacadeService: UserFacadeService
 ) {
+    val logger: Logger = LoggerFactory.getLogger(this.javaClass)
 
     @GetMapping("/user")
     fun getUser(

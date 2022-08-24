@@ -25,7 +25,7 @@ class HomeFacadeService(
         val today = LocalDate.now()
         val zoneId = ZoneId.systemDefault()
         val epoch: Long = today.atStartOfDay(zoneId).toEpochSecond()
-        val perfumeId = epoch % 3
+        val perfumeId = (epoch % 100)+1
         val perfumeInfo = perfumeService.getByIdOrThrow(perfumeId)
 
         return TodaySeehyangResponse.from(perfumeInfo)
