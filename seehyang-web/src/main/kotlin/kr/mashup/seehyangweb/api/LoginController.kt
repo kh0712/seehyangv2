@@ -18,7 +18,6 @@ class LoginController(
     fun login(
         @Valid @RequestBody request: LoginRequest,
     ): SeehyangResponse<LoginResponse> {
-
         val loginResponse = loginFacadeService.login(request)
         return SeehyangResponse.success(loginResponse)
     }

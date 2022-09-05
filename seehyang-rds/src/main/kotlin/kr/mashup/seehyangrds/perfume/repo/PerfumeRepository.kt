@@ -11,7 +11,7 @@ import java.util.*
 
 interface PerfumeRepository : JpaRepository<Perfume, Long>{
 
-    @EntityGraph(attributePaths = ["brand"])
+    @EntityGraph(attributePaths = ["brand", "thumbnail"])
     override fun findById(id: Long): Optional<Perfume>
 
     @Query("select p from Perfume p where p.koreanName like :name or p.name like :name")

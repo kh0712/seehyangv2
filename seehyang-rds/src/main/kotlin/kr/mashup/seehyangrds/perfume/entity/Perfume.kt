@@ -32,11 +32,11 @@ class Perfume(
     var gender: Gender = gender
         internal set
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
     var thumbnail: Image = thumbnail
         internal set
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     var brand: Brand = brand
         internal set
 
