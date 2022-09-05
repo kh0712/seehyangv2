@@ -17,6 +17,7 @@ configurations {
 dependencies {
     implementation(project(":seehyang-business"))
     implementation(project(":seehyang-core"))
+    implementation(project(":seehyang-redis"))
     implementation("com.auth0:java-jwt:3.18.3")
     implementation("io.springfox:springfox-boot-starter:3.0.0")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
