@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import kotlin.streams.toList
 
 @TransactionalService
 class CommunityService(
@@ -28,6 +29,7 @@ class CommunityService(
     private val storyDomain: StoryDomain,
     private val imageDomain: ImageDomain
 ) {
+    // 조회
     fun getPublicStories(storySortRequest: StorySortRequest):List<StoryInfo> {
         val sortBy = storySortRequest.sortBy ?: StorySortBy.ID
         val direction = storySortRequest.direction ?: Sort.Direction.DESC
@@ -44,26 +46,19 @@ class CommunityService(
         }.map { StoryInfo.from(it) }
     }
 
-    fun getStoryInfoByStoryId(storyId: Long, userId: Long): StoryInfo {
+    fun getStoryInfoByStoryId(storyId: Long): StoryInfo {
 
-        val user = userQueryDomain.getActiveByIdOrThrow(userId)
         val story = storyDomain.getActiveStoryByIdOrThrow(storyId)
-
-        val accessibility = story.viewType
-
-        return when (accessibility) {
-            StoryViewType.PUBLIC -> StoryInfo.from(story)
-            StoryViewType.ONLYADMIN -> throw BadRequestException(ResultCode.NOT_FOUND_STORY)
-            StoryViewType.ONLYME -> {
-                if (story.user.id!! == user.id!!) {
-                    StoryInfo.from(story)
-                } else {
-                    throw BadRequestException(ResultCode.NOT_FOUND_STORY)
-                }
-            }
-        }
+        return StoryInfo.from(story)
     }
 
+    fun getStoryInfoByStoryIds(storyIds: List<Long>): List<StoryInfo> {
+        return storyDomain
+            .getActiveStoryByIds(storyIds)
+            .stream()
+            .map { StoryInfo.from(it)}
+            .toList()
+    }
 
     fun getStoryInfoByPerfume(perfumeId: Long, userId: Long, storySortRequest: StorySortRequest): Page<StoryInfo> {
 
@@ -200,10 +195,13 @@ class CommunityService(
 
     @Transactional(readOnly = true)
     fun getMostStoriesPerfumes(from: LocalDateTime, to: LocalDateTime, pageable: Pageable): List<PerfumeInfo> {
-        return storyDomain
+        val perfumeIds = storyDomain
             .getPerfumeIdsByMostStories(from, to, pageable)
-            .map{perfumeDomain.getByIdOrThrow(it)}
-            .map{PerfumeInfo.from(it)}
+        return perfumeDomain
+            .getPerfumes(perfumeIds)
+            .stream()
+            .map { PerfumeInfo.from(it) }
+            .toList()
     }
 
     fun getMostStoriesPerfumes(pageable:Pageable): List<PerfumeInfo> {

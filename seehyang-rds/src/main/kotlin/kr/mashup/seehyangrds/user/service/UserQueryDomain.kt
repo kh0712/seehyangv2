@@ -34,6 +34,10 @@ class UserQueryDomain(
 
     fun getByStatus(status: UserStatus): List<User> = userRepository.findByStatus(status)
 
+    fun getActiveByIds(userIds: List<Long>): List<User> {
+        return userRepository.findAllById(userIds).filter { it.status == UserStatus.ACTIVE }
+    }
+
     private val NOT_FOUND_USER_EXCEPTION = NotFoundException(ResultCode.NOT_FOUND_USER)
 
 }

@@ -14,6 +14,7 @@ class PerfumeService(
     private val userQueryDomain: UserQueryDomain,
     private val perfumeDomain: PerfumeDomain
 ) {
+    // 조회
     fun getByIdOrThrow(perfumeId: Long): PerfumeInfo {
 
         val perfume = perfumeDomain.getByIdOrThrow(perfumeId)
@@ -23,20 +24,23 @@ class PerfumeService(
         val perfume = perfumeDomain.getByIdOrThrow(perfumeId)
         return perfumeDomain.getLikeCount(perfume)
     }
-
-    fun likePerfume(userId:Long, perfumeId:Long){
-        val perfume = perfumeDomain.getByIdOrThrow(perfumeId)
-        val user = userQueryDomain.getActiveByIdOrThrow(userId)
-        perfumeDomain.likePerfume(perfume, user)
-    }
-
-
     fun searchByPerfumeName(name: String, pageable: Pageable): Page<PerfumeInfo> {
         return perfumeDomain.searchByName(name, pageable).map { PerfumeInfo.from(it) }
     }
 
     fun getAll(pageable: Pageable): Page<PerfumeInfo> {
         return perfumeDomain.getAll(pageable).map { PerfumeInfo.from(it) }
+    }
+
+    // 변경
+    fun likePerfume(userId:Long, perfumeId:Long){
+        val perfume = perfumeDomain.getByIdOrThrow(perfumeId)
+        val user = userQueryDomain.getActiveByIdOrThrow(userId)
+        perfumeDomain.likePerfume(perfume, user)
+    }
+
+    fun getPerfumes(perfumeIds: List<Long>): List<PerfumeInfo> {
+        return perfumeDomain.getPerfumes(perfumeIds).map{PerfumeInfo.from(it)}.toList()
     }
 
 }

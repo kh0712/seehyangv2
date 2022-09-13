@@ -1,5 +1,6 @@
 package kr.mashup.seehyangweb.api
 
+import io.swagger.v3.oas.annotations.Parameter
 import kr.mashup.seehyangweb.auth.UserAuth
 import kr.mashup.seehyangweb.common.ApiV1
 import kr.mashup.seehyangweb.common.SeehyangResponse
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.multipart.MultipartFile
-import springfox.documentation.annotations.ApiIgnore
 
 
 @ApiV1
@@ -29,7 +29,7 @@ class ImageController(
 
     @PostMapping("/image")
     fun upload(
-        @ApiIgnore userAuth: UserAuth,
+        @Parameter(hidden = true) userAuth: UserAuth,
         @RequestParam(required = false) image: MultipartFile
     ): SeehyangResponse<ImageUploadResponse> {
 

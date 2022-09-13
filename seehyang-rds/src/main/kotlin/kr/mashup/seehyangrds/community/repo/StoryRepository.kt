@@ -21,7 +21,6 @@ interface StoryRepository : JpaRepository<Story, Long> {
     @Query("select s from Story s where s.perfume = :perfume and (s.viewType = 'PUBLIC' or  s.user = :user) and s.viewType <> 'ONLYADMIN'")
     fun findAccessibleByUserAndPerfume(@Param("user") user: User, @Param("perfume") perfume: Perfume, pageable: Pageable): Page<Story>
 
-    // TODO: 뭔가 이상한데
     @Query("select s from Story s join StoryLike sl on s = sl.story where s.perfume = :perfume and (s.viewType = 'PUBLIC' or  s.user = :user) and s.viewType <> 'ONLYADMIN' group by s order by count(sl) desc")
     fun findAccessibleByUserAndPerfumeOrderByLike(@Param("user") user: User, @Param("perfume") perfume: Perfume, pageable: Pageable): Page<Story>
 
@@ -40,7 +39,11 @@ interface StoryRepository : JpaRepository<Story, Long> {
     @Query("select count(s) from Perfume p join Story s on p.id = s.perfume.id where p = :perfume")
     fun countActiveStoryByPerfume(@Param("perfume") perfume: Perfume): Long
 
-
-
-
+    @Query("select new kr.mashup.seehyangrds.community.repo.HotStoryDto(s.id, count(sl)) from Story s join StoryLike sl on s = sl.story  where s.createdAt >= :startDateTime and s.createdAt <= :endDateTime group by s")
+    fun getHotStoryDto(@Param("startDateTime") startDateTime: LocalDateTime, @Param("endDateTime") endDateTime: LocalDateTime): List<HotStoryDto>
 }
+
+data class HotStoryDto(
+    val storyId:Long,
+    val count:Long,
+)

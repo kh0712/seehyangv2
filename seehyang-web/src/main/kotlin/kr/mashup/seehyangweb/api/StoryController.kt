@@ -1,16 +1,16 @@
 package kr.mashup.seehyangweb.api
 
+import io.swagger.v3.oas.annotations.Parameter
 import kr.mashup.seehyangbusiness.business.StorySortRequest
 import kr.mashup.seehyangweb.auth.UserAuth
 import kr.mashup.seehyangweb.common.ApiV1
 import kr.mashup.seehyangweb.common.EmptyResponse
 import kr.mashup.seehyangweb.common.SeehyangResponse
-import kr.mashup.seehyangweb.facade.StoryCreateRequest
 import kr.mashup.seehyangweb.facade.CommunityFacadeService
 import kr.mashup.seehyangweb.facade.StoryBasicInfoResponse
+import kr.mashup.seehyangweb.facade.StoryCreateRequest
 import kr.mashup.seehyangweb.facade.StoryDetailInfoResponse
 import org.springframework.web.bind.annotation.*
-import springfox.documentation.annotations.ApiIgnore
 import javax.validation.Valid
 
 @ApiV1
@@ -23,7 +23,7 @@ class StoryController(
      */
     @GetMapping("/story/{storyId}")
     fun getStory(
-        @ApiIgnore userAuth: UserAuth,
+        @Parameter(hidden = true) userAuth: UserAuth,
         @PathVariable("storyId") storyId: Long,
     ): SeehyangResponse<StoryDetailInfoResponse> {
 
@@ -37,7 +37,7 @@ class StoryController(
      */
     @GetMapping("/perfume/{perfumeId}/story")
     fun getStoriesByPerfume(
-        @ApiIgnore userAuth: UserAuth,
+        @Parameter(hidden = true) userAuth: UserAuth,
         @PathVariable(value = "perfumeId") perfumeId: Long,
         storySortRequest: StorySortRequest,
     ): SeehyangResponse<List<StoryBasicInfoResponse>> {
@@ -48,7 +48,7 @@ class StoryController(
 
     @PostMapping("/story")
     fun createStory(
-        @ApiIgnore userAuth: UserAuth,
+        @Parameter(hidden = true) userAuth: UserAuth,
         @Valid @RequestBody createRequest: StoryCreateRequest,
     ): SeehyangResponse<EmptyResponse> {
 
@@ -59,7 +59,7 @@ class StoryController(
 
     @PostMapping("/story/{storyId}/like")
     fun likeStory(
-        @ApiIgnore userAuth: UserAuth,
+        @Parameter(hidden = true) userAuth: UserAuth,
         @PathVariable("storyId") storyId: Long,
     ): SeehyangResponse<EmptyResponse> {
 
@@ -69,7 +69,7 @@ class StoryController(
 
     @DeleteMapping("/story/{storyId}")
     fun deleteStory(
-        @ApiIgnore userAuth: UserAuth,
+        @Parameter(hidden = true) userAuth: UserAuth,
         @PathVariable storyId: Long
     ): SeehyangResponse<EmptyResponse> {
 

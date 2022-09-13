@@ -46,6 +46,13 @@ class StoryDomain(
         return story
     }
 
+    fun getActiveStoryByIds(ids: List<Long>): List<Story> {
+        return storyRepository
+            .findAllById(ids)
+            .filter { it.status == StoryStatus.ACTIVE }
+            .toList()
+    }
+
     fun getAnyStoryByIdOrThrow(id: Long):Story{
         return storyRepository.findById(id).orElseThrow { NotFoundException(ResultCode.NOT_FOUND_STORY) }
     }

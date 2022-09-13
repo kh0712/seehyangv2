@@ -1,12 +1,14 @@
 package kr.mashup.seehyangweb.api
 
+import io.swagger.v3.oas.annotations.Parameter
 import kr.mashup.seehyangbusiness.business.PerfumeInfo
 import kr.mashup.seehyangweb.auth.UserAuth
 import kr.mashup.seehyangweb.common.ApiV1
 import kr.mashup.seehyangweb.common.SeehyangResponse
-import kr.mashup.seehyangweb.facade.*
+import kr.mashup.seehyangweb.facade.HomeFacadeService
+import kr.mashup.seehyangweb.facade.StoryBasicInfoResponse
+import kr.mashup.seehyangweb.facade.TodaySeehyangResponse
 import org.springframework.web.bind.annotation.GetMapping
-import springfox.documentation.annotations.ApiIgnore
 
 @ApiV1
 class HomeController(
@@ -14,7 +16,7 @@ class HomeController(
 ) {
     @GetMapping("/home/today")
     fun today(
-        @ApiIgnore userAuth: UserAuth
+        @Parameter(hidden = true) userAuth: UserAuth
     ): SeehyangResponse<TodaySeehyangResponse> {
 
         val todaySeehyangResponse = homeFacadeService.todaySeehyang()
@@ -23,7 +25,7 @@ class HomeController(
 
     @GetMapping("/home/hot")
     fun hotStory(
-        @ApiIgnore userAuth: UserAuth
+        @Parameter(hidden = true) userAuth: UserAuth
     ): SeehyangResponse<List<StoryBasicInfoResponse>> {
 
         val hotStories = homeFacadeService.hotStory()
@@ -32,7 +34,7 @@ class HomeController(
 
     @GetMapping("/home/weekly")
     fun weeklyRanking(
-        @ApiIgnore userAuth: UserAuth
+        @Parameter(hidden = true) userAuth: UserAuth
     ): SeehyangResponse<List<PerfumeInfo>> {
 
         val weeklyPerfumes = homeFacadeService.weeklyRanking()
@@ -41,7 +43,7 @@ class HomeController(
 
     @GetMapping("/home/steady")
     fun steadyPerfume(
-        @ApiIgnore userAuth: UserAuth,
+        @Parameter(hidden = true) userAuth: UserAuth,
     ): SeehyangResponse<List<PerfumeInfo>> {
 
         val steadyPerfumeResponses =  homeFacadeService.getSteadyPerfumes()

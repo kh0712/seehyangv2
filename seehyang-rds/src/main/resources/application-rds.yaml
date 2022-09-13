@@ -1,0 +1,24 @@
+server:
+  tomcat:
+    threads:
+      max: 200
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/seehyang?serverTimezone=UTC&characterEncoding=UTF-8
+    username: root
+    password: 1234
+    hikari:
+      maximum-pool-size: 100
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
+      hibernate.default_batch_fetch_size: 1000
+
+logging:
+  level:
+    org.hibernate.SQL: error

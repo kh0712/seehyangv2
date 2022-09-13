@@ -1,19 +1,19 @@
 package kr.mashup.seehyangweb.api
 
+import io.swagger.v3.oas.annotations.Parameter
 import kr.mashup.seehyangweb.auth.UserAuth
 import kr.mashup.seehyangweb.common.ApiV1
 import kr.mashup.seehyangweb.common.EmptyResponse
 import kr.mashup.seehyangweb.common.SeehyangResponse
 import kr.mashup.seehyangweb.facade.PerfumeBasicInfoResponse
-import kr.mashup.seehyangweb.facade.PerfumeFacadeService
 import kr.mashup.seehyangweb.facade.PerfumeDetailInfoResponse
+import kr.mashup.seehyangweb.facade.PerfumeFacadeService
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
-import springfox.documentation.annotations.ApiIgnore
 
 @ApiV1
 class PerfumeController(
@@ -22,7 +22,7 @@ class PerfumeController(
 
     @GetMapping("/perfume/{perfumeId}")
     fun getPerfumeDetail(
-        @ApiIgnore userAuth: UserAuth,
+        @Parameter(hidden = true) userAuth: UserAuth,
         @PathVariable perfumeId: Long,
     ) : SeehyangResponse<PerfumeDetailInfoResponse> {
 
@@ -32,7 +32,7 @@ class PerfumeController(
 
     @GetMapping("/perfume")
     fun getPerfumes(
-        @ApiIgnore userAuth: UserAuth,
+        @Parameter(hidden = true) userAuth: UserAuth,
         @PageableDefault pageable: Pageable,
     ) : SeehyangResponse<List<PerfumeBasicInfoResponse>> {
 
@@ -42,7 +42,7 @@ class PerfumeController(
 
     @GetMapping("/perfume/search")
     fun getPerfumesByName(
-        @ApiIgnore userAuth: UserAuth,
+        @Parameter(hidden = true) userAuth: UserAuth,
         @RequestParam(value = "name") name: String,
         @PageableDefault pageable: Pageable
     ): SeehyangResponse<List<PerfumeBasicInfoResponse>> {
@@ -54,7 +54,7 @@ class PerfumeController(
 
     @PostMapping("/perfume/{perfumeId}/like")
     fun likePerfume(
-        @ApiIgnore userAuth: UserAuth,
+        @Parameter(hidden = true) userAuth: UserAuth,
         @PathVariable perfumeId: Long
     ): SeehyangResponse<EmptyResponse> {
 

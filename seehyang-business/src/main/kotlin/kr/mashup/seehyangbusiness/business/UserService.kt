@@ -21,6 +21,8 @@ class UserService(
     private val imageService: ImageDomain,
 ) {
 
+    // 조회
+
     fun getActiveUserByIdOrThrow(id: Long): UserInfo {
         val user = userQueryDomain.getActiveByIdOrThrow(id)
         return UserInfo.from(user)
@@ -39,6 +41,7 @@ class UserService(
         return userQueryDomain.existByNickname(nickname)
     }
 
+    // 변경
     fun changeUserDetail(id: Long, nickname: String?, age: Int?, gender: Gender?) {
         val user = userQueryDomain.getActiveByIdOrThrow(id)
 
@@ -120,6 +123,10 @@ class UserService(
         }
 
         userCommandDomain.changeProfile(user, image)
+    }
+
+    fun getActiveUsers(userIds: List<Long>): List<UserInfo> {
+        return userQueryDomain.getActiveByIds(userIds).map{UserInfo.from (it)}.toList()
     }
 
     /**

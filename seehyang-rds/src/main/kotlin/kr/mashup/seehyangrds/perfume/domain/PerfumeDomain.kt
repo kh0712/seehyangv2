@@ -58,6 +58,11 @@ class PerfumeDomain(
         return perfumeRepository.findAll(pageable)
     }
 
+    fun getPerfumes(perfumeIds: List<Long>): List<Perfume>{
+        return perfumeRepository.findAllById(perfumeIds)
+    }
+
+
     /**
      * Private
      */

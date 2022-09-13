@@ -1,8 +1,11 @@
 package kr.mashup.seehyangweb.facade
 
 import kr.mashup.seehyangbusiness.business.*
+import kr.mashup.seehyangcore.exception.BadRequestException
+import kr.mashup.seehyangcore.exception.ResultCode
 import kr.mashup.seehyangcore.vo.StoryViewType
 import kr.mashup.seehyangweb.auth.UserAuth
+import kr.mashup.seehyangweb.cache.CacheSupport
 import kr.mashup.seehyangweb.common.NonTransactionalService
 import org.springframework.data.domain.Page
 import java.time.LocalDateTime
@@ -12,18 +15,56 @@ import javax.validation.constraints.NotBlank
 class CommunityFacadeService(
     private val communityService: CommunityService,
     private val userService: UserService,
-    private val perfumeService: PerfumeService
+    private val perfumeService: PerfumeService,
+    private val cacheSupport: CacheSupport
 ) {
+
 
     fun getStoryDetail(userAuth: UserAuth, storyId: Long): StoryDetailInfoResponse {
 
-        val storyInfo = communityService.getStoryInfoByStoryId(storyId, userAuth.id)
-        val likeCont = communityService.getActiveStoryLikeCount(storyId)
-        val userInfo = userService.getActiveUserByIdOrThrow(userAuth.id)
-        val perfumeId = storyInfo.perfumeId
-        val perfumeInfo = perfumeService.getByIdOrThrow(perfumeId)
+        val userCache = cacheSupport.getUser(userAuth.id)
 
-        return StoryDetailInfoResponse.from(userInfo, perfumeInfo, storyInfo, likeCont)
+        val userInfo: UserInfo = if (userCache == null) {
+            val foundUserInfo = userService.getActiveUserByIdOrThrow(userAuth.id)
+            cacheSupport.putUserAsync(foundUserInfo)
+            foundUserInfo
+        } else {
+            userCache
+        }
+        val storyCache = cacheSupport.getStory(storyId)
+        val storyInfo = if (storyCache == null) {
+            val foundStoryInfo = communityService.getStoryInfoByStoryId(storyId)
+            cacheSupport.putStoryAsync(foundStoryInfo)
+            foundStoryInfo
+        } else {
+            storyCache
+        }
+
+        val viewType = storyInfo.viewType
+        if (viewType == StoryViewType.ONLYADMIN || (viewType == StoryViewType.ONLYME && storyInfo.userId != userInfo.id)) {
+            throw BadRequestException(ResultCode.NOT_FOUND_STORY)
+        }
+
+        val likeCountCache = cacheSupport.getStoryLike(storyId)
+        val likeCount = if (likeCountCache == null) {
+            val foundLikeCount = communityService.getActiveStoryLikeCount(storyId)
+            cacheSupport.putStoryLikeAsync(storyId, foundLikeCount)
+            foundLikeCount
+        } else {
+            likeCountCache
+        }
+
+        val perfumeId = storyInfo.perfumeId
+        val perfumeCache = cacheSupport.getPerfume(perfumeId)
+        val perfumeInfo = if (perfumeCache == null) {
+            val foundPerfumeInfo = perfumeService.getByIdOrThrow(perfumeId)
+            cacheSupport.putPerfumeAsync(foundPerfumeInfo)
+            foundPerfumeInfo
+        } else {
+            perfumeCache
+        }
+
+        return StoryDetailInfoResponse.from(userInfo, perfumeInfo, storyInfo, likeCount)
     }
 
     fun getStoriesByPerfume(
@@ -120,11 +161,11 @@ data class StoryBasicInfoResponse(
     val viewType: StoryViewType,
     val createdAt: LocalDateTime,
     val modifiedAt: LocalDateTime,
-){
+) {
     companion object {
         fun from(userInfo: UserInfo, perfumeInfo: PerfumeInfo, storyInfo: StoryInfo): StoryBasicInfoResponse {
             return StoryBasicInfoResponse(
-                id= storyInfo.id,
+                id = storyInfo.id,
                 userId = userInfo.id!!,
                 userNickname = userInfo.nickname,
                 userProfileId = userInfo.profileUrlId,
@@ -157,9 +198,14 @@ data class StoryDetailInfoResponse(
     val modifiedAt: LocalDateTime,
 ) {
     companion object {
-        fun from(userInfo: UserInfo, perfumeInfo: PerfumeInfo, storyInfo: StoryInfo, likeCount:Long): StoryDetailInfoResponse {
+        fun from(
+            userInfo: UserInfo,
+            perfumeInfo: PerfumeInfo,
+            storyInfo: StoryInfo,
+            likeCount: Long
+        ): StoryDetailInfoResponse {
             return StoryDetailInfoResponse(
-                id= storyInfo.id,
+                id = storyInfo.id,
                 userId = userInfo.id!!,
                 userNickname = userInfo.nickname,
                 userProfileId = userInfo.profileUrlId,

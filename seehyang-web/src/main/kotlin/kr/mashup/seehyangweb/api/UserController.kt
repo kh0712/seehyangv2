@@ -1,5 +1,6 @@
 package kr.mashup.seehyangweb.api
 
+import io.swagger.v3.oas.annotations.Parameter
 import kr.mashup.seehyangweb.auth.UserAuth
 import kr.mashup.seehyangweb.common.ApiV1
 import kr.mashup.seehyangweb.common.EmptyResponse
@@ -8,7 +9,6 @@ import kr.mashup.seehyangweb.facade.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
-import springfox.documentation.annotations.ApiIgnore
 import javax.validation.Valid
 
 @ApiV1
@@ -19,7 +19,7 @@ class UserController(
 
     @GetMapping("/user")
     fun getUser(
-        @ApiIgnore userAuth: UserAuth,
+        @Parameter(hidden = true) userAuth: UserAuth,
     ): SeehyangResponse<UserInfoResponse> {
         val user:UserInfoResponse = userFacadeService.getUser(userAuth)
         return SeehyangResponse.success(user)
@@ -43,7 +43,7 @@ class UserController(
 
     @DeleteMapping("/user")
     fun withdrawUser(
-        @ApiIgnore userAuth: UserAuth,
+        @Parameter(hidden = true) userAuth: UserAuth,
         @Valid @RequestBody withdrawRequest: WithdrawRequest
     ): SeehyangResponse<EmptyResponse> {
 
@@ -54,7 +54,7 @@ class UserController(
 
     @PostMapping("/user/profile")
     fun changeUserProfileImage(
-        @ApiIgnore userAuth: UserAuth,
+        @Parameter(hidden = true) userAuth: UserAuth,
         @Valid @RequestBody request: ProfileUpdateRequest
     ): SeehyangResponse<UserInfoResponse> {
 
@@ -65,7 +65,7 @@ class UserController(
 
     @PutMapping("/user")
     fun registerUserDetailInfo(
-        @ApiIgnore userAuth: UserAuth,
+        @Parameter(hidden = true) userAuth: UserAuth,
         @Valid @RequestBody request: RegisterUserDetailRequest
     ): SeehyangResponse<UserInfoResponse> {
         val userInfoResponse = userFacadeService.changeUserDetail(userAuth, request)

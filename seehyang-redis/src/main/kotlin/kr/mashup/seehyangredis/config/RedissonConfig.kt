@@ -7,7 +7,6 @@ import org.redisson.config.Config
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.PropertySource
 
 @Configuration
 class RedissonConfig {
@@ -27,4 +26,6 @@ class RedissonConfig {
             idleConnectionTimeout = 1000 * 3
         }
     })
+
+
 }

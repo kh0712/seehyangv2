@@ -1,0 +1,13 @@
+spring:
+  profiles:
+    include:
+      - core
+      - rds
+    active: local
+  batch:
+    job:
+      names: ${job.name:NONE}
+      enabled: true
+    jdbc:
+      initialize-schema: never
+
