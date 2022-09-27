@@ -17,7 +17,7 @@ import javax.validation.constraints.NotBlank
 @Validated
 @TransactionalService
 class UserCommandDomain(
-    val userRepository: UserRepository
+    private val userRepository: UserRepository
 ) {
 
     fun save(@Valid command: UserSaveCommand): User{

@@ -12,7 +12,12 @@ import kr.mashup.seehyangrds.user.entity.UserStatus
 import kr.mashup.seehyangrds.user.service.UserCommandDomain
 import kr.mashup.seehyangrds.user.service.UserQueryDomain
 import kr.mashup.seehyangrds.user.service.UserSaveCommand
+import org.hibernate.validator.constraints.Length
+import org.springframework.validation.annotation.Validated
+import javax.validation.constraints.Email
+import javax.validation.constraints.Min
 
+@Validated
 @TransactionalService
 class UserService(
     private val userQueryDomain: UserQueryDomain,
@@ -23,12 +28,12 @@ class UserService(
 
     // 조회
 
-    fun getActiveUserByIdOrThrow(id: Long): UserInfo {
+    fun getActiveUserOrThrow(id: Long): UserInfo {
         val user = userQueryDomain.getActiveByIdOrThrow(id)
         return UserInfo.from(user)
     }
 
-    fun getActiveUserByEmailAndPasswordOrThrow(email:String, password:String): UserInfo{
+    fun getActiveUserOrThrow(email:String, password:String): UserInfo{
         val user = userQueryDomain.getActiveByEmailOrThrow(email)
         if(!user.isMatchedPassword(password) || user.status != UserStatus.ACTIVE){
             throw NotFoundException(ResultCode.NOT_FOUND_USER)
@@ -42,6 +47,36 @@ class UserService(
     }
 
     // 변경
+    fun signUp(command: SignUpCommand): UserInfo {
+        val nickname = command.nickname
+        val email = command.email
+        val password = command.password
+        val age = command.age
+        val gender = command.gender
+
+        val isExistNickname = userQueryDomain.existByNickname(nickname)
+        if(isExistNickname){
+            throw BadRequestException(ResultCode.ALREADY_EXIST_NICKNAME)
+        }
+
+        val isExistEmail = userQueryDomain.existByEmail(email)
+        if(isExistEmail){
+            throw BadRequestException(ResultCode.INVALID_EMAIL)
+        }
+
+        val user = userCommandDomain.save(
+            UserSaveCommand(
+                nickname = nickname,
+                email = email,
+                gender = gender,
+                password = password,
+                age = age
+            )
+        )
+        return UserInfo.from(user)
+    }
+
+
     fun changeUserDetail(id: Long, nickname: String?, age: Int?, gender: Gender?) {
         val user = userQueryDomain.getActiveByIdOrThrow(id)
 
@@ -62,38 +97,7 @@ class UserService(
         }
     }
 
-    fun signUp(email: String, password: String, nickname: String, age: Int, gender: Gender): Long {
 
-        val isExistNickname = userQueryDomain.existByNickname(nickname)
-
-        if(isExistNickname){
-            throw BadRequestException(ResultCode.ALREADY_EXIST_NICKNAME)
-        }
-        if(userInfoValidator.isValidUserNickname(nickname).not()){
-            throw BadRequestException(ResultCode.INVALID_NICKNAME)
-        }
-        val isExistEmail = userQueryDomain.existByEmail(email)
-        if(isExistEmail){
-            throw BadRequestException(ResultCode.INVALID_EMAIL)
-        }
-        if(userInfoValidator.isValidUserAge(age).not()){
-            throw BadRequestException(ResultCode.INVALID_AGE)
-        }
-        if(userInfoValidator.isValidPassword(password)){
-            throw BadRequestException(ResultCode.INVALID_PASSWORD)
-        }
-
-        val user = userCommandDomain.save(
-            UserSaveCommand(
-                nickname = nickname,
-                email = email,
-                gender = gender,
-                password = password,
-                age = age
-            )
-        )
-        return user.id!!
-    }
 
     fun withdraw(id: Long, password: String) {
         val user = userQueryDomain.getActiveByIdOrThrow(id)
@@ -154,6 +158,24 @@ data class UserInfo(
                 gender = user.gender,
                 profileUrlId = user.profile?.id
             )
+        }
+    }
+}
+
+data class SignUpCommand(
+    @Email
+    val email: String,
+    @Length(min = 8)
+    val password: String,
+    @Length(min = 3)
+    val nickname: String,
+    @Min(3)
+    val age: Int,
+    val gender: Gender
+){
+    companion object{
+        fun of(email: String, password: String, nickname: String, age: Int, gender: Gender): SignUpCommand{
+            return SignUpCommand(email, password, nickname, age, gender)
         }
     }
 }

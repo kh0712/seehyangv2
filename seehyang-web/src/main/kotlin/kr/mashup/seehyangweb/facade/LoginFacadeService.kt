@@ -17,7 +17,7 @@ class LoginFacadeService(
         val email = request.email
         val password = request.password
 
-        val userInfo = userService.getActiveUserByEmailAndPasswordOrThrow(email, password)
+        val userInfo = userService.getActiveUserOrThrow(email, password)
         val token = userAuthService.getToken(UserAuth(userInfo.id!!))
 
         return LoginResponse(token)

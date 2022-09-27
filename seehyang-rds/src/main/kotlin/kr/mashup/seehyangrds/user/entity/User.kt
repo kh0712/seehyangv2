@@ -34,13 +34,13 @@ class User(
 ) : BaseEntity() {
 
 
-    lateinit var password: String
+    var password: String = passwordEncoder.encode(password)
+        set(value){
+            field = passwordEncoder.encode(value)
+        }
 
     fun isMatchedPassword(rawPassword: String): Boolean = passwordEncoder.matches(rawPassword, this.password)
 
-    init {
-        this.password = passwordEncoder.encode(password)
-    }
 
     companion object {
         val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()

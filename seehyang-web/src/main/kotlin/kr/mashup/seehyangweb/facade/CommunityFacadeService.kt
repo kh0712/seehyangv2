@@ -25,7 +25,7 @@ class CommunityFacadeService(
         val userCache = cacheSupport.getUser(userAuth.id)
 
         val userInfo: UserInfo = if (userCache == null) {
-            val foundUserInfo = userService.getActiveUserByIdOrThrow(userAuth.id)
+            val foundUserInfo = userService.getActiveUserOrThrow(userAuth.id)
             cacheSupport.putUserAsync(foundUserInfo)
             foundUserInfo
         } else {
@@ -73,7 +73,7 @@ class CommunityFacadeService(
         storySortRequest: StorySortRequest
     ): Page<StoryBasicInfoResponse> {
 
-        val userInfo = userService.getActiveUserByIdOrThrow(userAuth.id)
+        val userInfo = userService.getActiveUserOrThrow(userAuth.id)
         val perfumeInfo = perfumeService.getByIdOrThrow(perfumeId)
 
         return communityService
@@ -107,7 +107,7 @@ class CommunityFacadeService(
 
         return communityService
             .getComments(userAuth.id, storyId, commentSortRequest)
-            .map { CommentInfoResponse.from(userService.getActiveUserByIdOrThrow(it.userId), it) }
+            .map { CommentInfoResponse.from(userService.getActiveUserOrThrow(it.userId), it) }
     }
 
     fun getReplyComments(
@@ -119,7 +119,7 @@ class CommunityFacadeService(
 
         return communityService
             .getReplyComments(userAuth.id, storyId, parentCommentId, commentSortRequest)
-            .map { CommentInfoResponse.from(userService.getActiveUserByIdOrThrow(it.userId), it) }
+            .map { CommentInfoResponse.from(userService.getActiveUserOrThrow(it.userId), it) }
     }
 
     fun createComment(userAuth: UserAuth, storyId: Long, request: CommentCreateRequest) {

@@ -1,5 +1,6 @@
 package kr.mashup.seehyangweb.facade
 
+import kr.mashup.seehyangbusiness.business.SignUpCommand
 import kr.mashup.seehyangbusiness.business.UserInfo
 import kr.mashup.seehyangbusiness.business.UserService
 import kr.mashup.seehyangcore.vo.Gender
@@ -15,7 +16,7 @@ class UserFacadeService(
 ) {
 
     fun getUser(userAuth: UserAuth): UserInfoResponse {
-        val userInfo: UserInfo = userService.getActiveUserByIdOrThrow(id = userAuth.id)
+        val userInfo: UserInfo = userService.getActiveUserOrThrow(id = userAuth.id)
         return UserInfoResponse.from(userInfo)
     }
 
@@ -28,17 +29,27 @@ class UserFacadeService(
         val (nickname, age, gender) = registerUserDetailRequest.copy()
         userService.changeUserDetail(id = userAuth.id, age = age, nickname = nickname, gender = gender)
 
-        val userInfo: UserInfo = userService.getActiveUserByIdOrThrow(id = userAuth.id)
+        val userInfo: UserInfo = userService.getActiveUserOrThrow(id = userAuth.id)
 
         return UserInfoResponse.from(userInfo)
     }
 
     fun signUpUser(signUpRequest: SignUpRequest): SignUpResponse {
-        val (email, password, nickname, age, gender) = signUpRequest.copy()
-        val id: Long =
-            userService.signUp(email = email, password = password, nickname = nickname, age = age, gender = gender)
 
-        return SignUpResponse(id)
+        val (email, password, nickname, age, gender) = signUpRequest.copy()
+
+        val userInfo: UserInfo =
+            userService.signUp(
+                SignUpCommand.of(
+                    email = email,
+                    password = password,
+                    nickname = nickname,
+                    age = age,
+                    gender = gender
+                )
+            )
+
+        return SignUpResponse(userInfo.id!!)
     }
 
     fun withdrawUser(userAuth: UserAuth, withdrawRequest: WithdrawRequest) {
@@ -47,7 +58,7 @@ class UserFacadeService(
 
     fun changeProfileImage(userAuth: UserAuth, profileUpdateRequest: ProfileUpdateRequest): UserInfoResponse {
         userService.changeProfile(userAuth.id, profileUpdateRequest.imageId)
-        val userInfo: UserInfo = userService.getActiveUserByIdOrThrow(id = userAuth.id)
+        val userInfo: UserInfo = userService.getActiveUserOrThrow(id = userAuth.id)
         return UserInfoResponse.from(userInfo)
     }
 }
@@ -63,7 +74,7 @@ data class ProfileUpdateRequest(
 )
 
 data class SignUpRequest(
-    @Email(message="올바른 이메일 형식이어야 합니다.")
+    @Email(message = "올바른 이메일 형식이어야 합니다.")
     val email: String,
     @NotBlank
     val password: String,
@@ -81,11 +92,11 @@ data class UserInfoResponse(
     val age: Int,
     val gender: Gender,
     val profileImageId: Long?
-){
-    companion object{
-        fun from(userInfo: UserInfo): UserInfoResponse{
+) {
+    companion object {
+        fun from(userInfo: UserInfo): UserInfoResponse {
             val (id, email, nickname, age, gender, profileImageId) = userInfo.copy()
-            return UserInfoResponse(id!!,email, nickname, age?:0, gender, profileImageId)
+            return UserInfoResponse(id!!, email, nickname, age ?: 0, gender, profileImageId)
         }
     }
 }
