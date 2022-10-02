@@ -46,7 +46,7 @@ class HotStoryBatch(
         return stepBuilderFactory
             .get("hotStoryStep")
             .tasklet { contribution, chunkContext ->
-                val requestLocalDate = LocalDate.parse(requestDate, DateTimeFormatter.ofPattern("yyyy-mm-dd"))
+                val requestLocalDate = LocalDate.parse(requestDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
                 val startDateTime = requestLocalDate.atStartOfDay()
                 val endDateTime = requestLocalDate.atEndOfDay()
                 val hotStorys = storyRepository
@@ -56,7 +56,6 @@ class HotStoryBatch(
                     .toList()
                 hotStoryRepository.saveAll(hotStorys)
                 RepeatStatus.FINISHED
-
             }
             .build()
     }
