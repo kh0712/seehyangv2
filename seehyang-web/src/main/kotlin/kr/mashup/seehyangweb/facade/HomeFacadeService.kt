@@ -7,6 +7,7 @@ import kr.mashup.seehyangcore.vo.StoryViewType
 import kr.mashup.seehyangweb.cache.CacheSupport
 import kr.mashup.seehyangweb.common.NonTransactionalService
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -69,9 +70,8 @@ class HomeFacadeService(
         )
     }
 
-    // 전체에서 스토리 많이 올라온 향수를 가져온다. 일주일 기준 변경
+    // 전체에서 스토리 많이 올라온 향수를 가져온다. 일주일 기준 변경  - 배치 적용 완료
     fun getSteadyPerfumes(): List<PerfumeInfo> {
-        // TODO : 배치 적용하기
         val pageRequest = PageRequest.of(0, 10)
         return communityService.getMostStoriesPerfumes(pageRequest)
     }

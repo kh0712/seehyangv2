@@ -10,15 +10,20 @@ import kr.mashup.seehyangrds.perfume.entity.Perfume
 import kr.mashup.seehyangrds.perfume.entity.PerfumeLike
 import kr.mashup.seehyangrds.perfume.repo.PerfumeLikeRepository
 import kr.mashup.seehyangrds.perfume.repo.PerfumeRepository
+import kr.mashup.seehyangrds.perfume.repo.SteadyPerfumeRepository
 import kr.mashup.seehyangrds.user.entity.User
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import java.time.LocalDate
 import java.util.regex.Pattern
+import kotlin.streams.toList
 
 @TransactionalService
 class PerfumeDomain(
     private val perfumeRepository: PerfumeRepository,
+    private val steadyPerfumeRepository: SteadyPerfumeRepository,
     private val perfumeLikeRepository: PerfumeLikeRepository
 ) {
 
@@ -59,6 +64,12 @@ class PerfumeDomain(
     }
 
     fun getPerfumes(perfumeIds: List<Long>): List<Perfume>{
+        return perfumeRepository.findAllById(perfumeIds)
+    }
+
+    fun getSteadyPerfumes(pageable: Pageable): List<Perfume> {
+        val page = PageRequest.of(pageable.pageNumber, pageable.pageSize, Sort.Direction.DESC, "baseDate")
+        val perfumeIds = steadyPerfumeRepository.findAll(page).stream().map { it -> it.perfumeId }.toList()
         return perfumeRepository.findAllById(perfumeIds)
     }
 

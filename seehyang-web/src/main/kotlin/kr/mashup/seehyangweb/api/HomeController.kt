@@ -45,7 +45,6 @@ class HomeController(
     fun steadyPerfume(
         @Parameter(hidden = true) userAuth: UserAuth,
     ): SeehyangResponse<List<PerfumeInfo>> {
-
         val steadyPerfumeResponses =  homeFacadeService.getSteadyPerfumes()
         return SeehyangResponse.success(steadyPerfumeResponses)
     }

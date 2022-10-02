@@ -205,10 +205,7 @@ class CommunityService(
     }
 
     fun getMostStoriesPerfumes(pageable:Pageable): List<PerfumeInfo> {
-        return storyDomain
-            .getPerfumeIdsByMostStories(pageable)
-            .map{perfumeDomain.getByIdOrThrow(it)}
-            .map{PerfumeInfo.from(it)}
+        return perfumeDomain.getSteadyPerfumes(pageable).map{ it -> PerfumeInfo.from (it)}.toList()
     }
 
     fun getStoryCountByPerfume(perfumeId: Long): Long {
