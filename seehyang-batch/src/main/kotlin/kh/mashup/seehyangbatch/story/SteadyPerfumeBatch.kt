@@ -45,25 +45,19 @@ class SteadyPerfumeBatch(
 
         return stepBuilderFactory.get("steadyPerfumeJob")
             .chunk<Story, Story>(CHUNK_SIZE)
-            .reader(storyReader(null))
+            .reader(storyReader())
             .writer(StoryPerfumeCountWriter())
             .build()
     }
 
     @Bean
     @StepScope
-    fun storyReader(@Value("#{jobParameters[requestDate]}") requestDate: String?): JpaPagingItemReader<Story> {
-        val requestLocalDate = LocalDate.parse(requestDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-        val startDateTime = LocalDateTime.of(requestLocalDate, LocalTime.MIN)
-        val endDateTime = LocalDateTime.of(requestLocalDate, LocalTime.MAX)
-        val param = mutableMapOf<String, Any>()
-        param.put("startDateTime", startDateTime)
-        param.put("endDateTime", endDateTime)
+    fun storyReader(): JpaPagingItemReader<Story> {
+
         return JpaPagingItemReaderBuilder<Story>()
-            .queryString("select s from Story s where s.status = 'ACTIVE' and s.viewType = 'PUBLIC' and s.createdAt >= :startDateTime and s.createdAt <= :endDateTime")
+            .queryString("select s from Story s where s.status = 'ACTIVE' and s.viewType = 'PUBLIC'")
             .pageSize(CHUNK_SIZE)
             .entityManagerFactory(entityManagerFactory)
-            .parameterValues(param)
             .name("storyReader")
             .build()
     }

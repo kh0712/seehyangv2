@@ -218,6 +218,10 @@ class CommunityService(
         return storyDomain.getLikeCount(story)
     }
 
+    fun getWeeklyPerfumes(): List<PerfumeInfo> {
+        return perfumeDomain.getWeeklyPerfumes().map { it-> PerfumeInfo.from(it) }.toList()
+    }
+
 
 }
 

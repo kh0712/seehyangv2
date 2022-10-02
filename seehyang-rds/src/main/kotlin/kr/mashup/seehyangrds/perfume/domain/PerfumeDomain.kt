@@ -11,6 +11,7 @@ import kr.mashup.seehyangrds.perfume.entity.PerfumeLike
 import kr.mashup.seehyangrds.perfume.repo.PerfumeLikeRepository
 import kr.mashup.seehyangrds.perfume.repo.PerfumeRepository
 import kr.mashup.seehyangrds.perfume.repo.SteadyPerfumeRepository
+import kr.mashup.seehyangrds.perfume.repo.WeeklyPerfumeRepository
 import kr.mashup.seehyangrds.user.entity.User
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -24,6 +25,7 @@ import kotlin.streams.toList
 class PerfumeDomain(
     private val perfumeRepository: PerfumeRepository,
     private val steadyPerfumeRepository: SteadyPerfumeRepository,
+    private val weeklyPerfumeRepository: WeeklyPerfumeRepository,
     private val perfumeLikeRepository: PerfumeLikeRepository
 ) {
 
@@ -70,6 +72,12 @@ class PerfumeDomain(
     fun getSteadyPerfumes(pageable: Pageable): List<Perfume> {
         val page = PageRequest.of(pageable.pageNumber, pageable.pageSize, Sort.Direction.DESC, "baseDate")
         val perfumeIds = steadyPerfumeRepository.findAll(page).stream().map { it -> it.perfumeId }.toList()
+        return perfumeRepository.findAllById(perfumeIds)
+    }
+
+    fun getWeeklyPerfumes():List<Perfume> {
+        val page = PageRequest.of(0, 10, Sort.Direction.DESC, "baseDate")
+        val perfumeIds = weeklyPerfumeRepository.findAll(page).stream().map { it -> it.perfumeId }.toList()
         return perfumeRepository.findAllById(perfumeIds)
     }
 

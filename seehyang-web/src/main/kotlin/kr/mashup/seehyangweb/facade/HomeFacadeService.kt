@@ -58,16 +58,8 @@ class HomeFacadeService(
 
     // 저번주 스토리 많이 올라온 향수를 가져온다.
     fun weeklyRanking(): List<PerfumeInfo> {
-        // TODO : 배치 적용하기
-        val beforeWeek = LocalDate.now().atStartOfDay().minusWeeks(1L)
-        val fieldISO = WeekFields.of(Locale.KOREA).dayOfWeek()
-        val pageRequest = PageRequest.of(0, 10)
 
-        return communityService.getMostStoriesPerfumes(
-            beforeWeek.with(fieldISO, 1),
-            beforeWeek.with(fieldISO, 7),
-            pageRequest
-        )
+        return communityService.getWeeklyPerfumes()
     }
 
     // 전체에서 스토리 많이 올라온 향수를 가져온다. 일주일 기준 변경  - 배치 적용 완료

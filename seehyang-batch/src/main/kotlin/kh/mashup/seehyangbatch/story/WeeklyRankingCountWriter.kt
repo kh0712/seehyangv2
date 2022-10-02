@@ -4,11 +4,12 @@ import kr.mashup.seehyangrds.community.entity.Story
 import org.springframework.batch.core.ExitStatus
 import org.springframework.batch.core.StepExecution
 import org.springframework.batch.core.StepExecutionListener
+import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.item.ExecutionContext
 import org.springframework.batch.item.ItemWriter
+import org.springframework.stereotype.Component
 
-
-class StoryPerfumeCountWriter : ItemWriter<Story>, StepExecutionListener{
+class WeeklyRankingCountWriter : ItemWriter<Story>, StepExecutionListener{
 
     lateinit var jobExecutionContext: ExecutionContext
 
