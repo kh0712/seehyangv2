@@ -22,7 +22,7 @@ class RedissonConfig {
             connectionMinimumIdleSize = 10
             connectionPoolSize = 30
             connectTimeout = 1000 * 5
-            timeout = 1000 * 3
+            timeout = 1000 * 5
             idleConnectionTimeout = 1000 * 3
         }
     })

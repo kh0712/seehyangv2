@@ -88,11 +88,13 @@ class StoryDomain(
     }
 
 
-    fun likeOrCancelStory(user: User, story: Story): StoryLike {
+    fun likeOrCancelStory(user: User, story: Story): Boolean {
         if(isExistLike(user, story)){
             storyLikeRepository.deleteByUserAndStory(user,story)
+            return false
         }
-        return storyLikeRepository.save(StoryLike(user, story))
+        storyLikeRepository.save(StoryLike(user, story))
+        return true
     }
 
     fun isExistStoryLike(user:User, story: Story): Boolean{

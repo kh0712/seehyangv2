@@ -22,22 +22,17 @@ class CommunityFacadeService(
 
     fun getStoryDetail(userAuth: UserAuth, storyId: Long): StoryDetailInfoResponse {
 
-        val userCache = cacheSupport.getUser(userAuth.id)
 
-        val userInfo: UserInfo = if (userCache == null) {
-            val foundUserInfo = userService.getActiveUserOrThrow(userAuth.id)
-            cacheSupport.putUserAsync(foundUserInfo)
-            foundUserInfo
-        } else {
-            userCache
+        var userInfo: UserInfo? =  cacheSupport.getUser(userAuth.id)
+        if (userInfo == null) {
+            userInfo = userService.getActiveUserOrThrow(userAuth.id)
+            cacheSupport.putUserAsync(userInfo)
         }
-        val storyCache = cacheSupport.getStory(storyId)
-        val storyInfo = if (storyCache == null) {
-            val foundStoryInfo = communityService.getStoryInfoByStoryId(storyId)
-            cacheSupport.putStoryAsync(foundStoryInfo)
-            foundStoryInfo
-        } else {
-            storyCache
+
+        var storyInfo =  cacheSupport.getStory(storyId)
+        if (storyInfo == null) {
+            storyInfo = communityService.getStoryInfoByStoryId(storyId)
+            cacheSupport.putStoryAsync(storyInfo)
         }
 
         val viewType = storyInfo.viewType
@@ -45,23 +40,18 @@ class CommunityFacadeService(
             throw BadRequestException(ResultCode.NOT_FOUND_STORY)
         }
 
-        val likeCountCache = cacheSupport.getStoryLike(storyId)
-        val likeCount = if (likeCountCache == null) {
-            val foundLikeCount = communityService.getActiveStoryLikeCount(storyId)
-            cacheSupport.putStoryLikeAsync(storyId, foundLikeCount)
-            foundLikeCount
-        } else {
-            likeCountCache
+        var likeCount =  cacheSupport.getStoryLikeCount(storyId)
+        if (likeCount == null) {
+            likeCount  = communityService.getActiveStoryLikeCount(storyId)
+            cacheSupport.putStoryLikeAsync(storyId, likeCount)
         }
 
         val perfumeId = storyInfo.perfumeId
-        val perfumeCache = cacheSupport.getPerfume(perfumeId)
-        val perfumeInfo = if (perfumeCache == null) {
-            val foundPerfumeInfo = perfumeService.getByIdOrThrow(perfumeId)
-            cacheSupport.putPerfumeAsync(foundPerfumeInfo)
-            foundPerfumeInfo
-        } else {
-            perfumeCache
+
+        var perfumeInfo =cacheSupport.getPerfume(perfumeId)
+        if (perfumeInfo == null) {
+            perfumeInfo = perfumeService.getByIdOrThrow(perfumeId)
+            cacheSupport.putPerfumeAsync(perfumeInfo)
         }
 
         return StoryDetailInfoResponse.from(userInfo, perfumeInfo, storyInfo, likeCount)
@@ -73,8 +63,16 @@ class CommunityFacadeService(
         storySortRequest: StorySortRequest
     ): Page<StoryBasicInfoResponse> {
 
-        val userInfo = userService.getActiveUserOrThrow(userAuth.id)
-        val perfumeInfo = perfumeService.getByIdOrThrow(perfumeId)
+        var userInfo = cacheSupport.getUser(userAuth.id)
+        if(userInfo == null){
+            userInfo = userService.getActiveUserOrThrow(userAuth.id)
+            cacheSupport.putUserAsync(userInfo)
+        }
+        var perfumeInfo= cacheSupport.getPerfume(perfumeId)
+        if(perfumeInfo == null){
+            perfumeInfo = perfumeService.getByIdOrThrow(perfumeId)
+            cacheSupport.putPerfumeAsync(perfumeInfo)
+        }
 
         return communityService
             .getStoryInfoByPerfume(perfumeId, userAuth.id, storySortRequest)
@@ -83,15 +81,17 @@ class CommunityFacadeService(
 
     fun createStory(userAuth: UserAuth, request: StoryCreateRequest) {
 
-        communityService.createStory(
+        val storyInfo = communityService.createStory(
             userAuth.id, request.perfumeId, request.imageId, request.viewType
         )
 
+        cacheSupport.putStoryAsync(storyInfo)
     }
 
     fun likeStory(userAuth: UserAuth, storyId: Long) {
-
+        cacheSupport.getStoryLikeLock(storyId, userAuth.id,  waitMs = 3000L, leaseMs = 7000L)
         communityService.likeOrCancelStory(storyId, userAuth.id)
+        cacheSupport.unlockStoryLike(storyId, userAuth.id)
     }
 
     fun deleteStory(storyId: Long, userAuth: UserAuth) {

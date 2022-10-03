@@ -12,120 +12,86 @@ import org.springframework.stereotype.Component
 
 @Component
 class CacheSupport(
-    private val cacheService: CacheService
+    private val cacheService: CacheService,
+    private val asyncCacheSupport: AsyncCacheSupport
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
+    private val storyLikeLockPrefix = "STORY_LIKE_LOCK"
 
     fun getUser(userId: Long): UserInfo? {
-        var userCache:String?
-        try{
-            userCache = cacheService.getUser(key = userId.toString())
-        }catch (e: Exception){
-            userCache = null
-            log.error("cache error : ${e.message}")
-        }
-        if(userCache!=null){
+        val userCache: String? = cacheService.getUser(key = userId.toString())
+
+        if (userCache != null) {
             log.info("user cache hit user id ${userId}")
-        }else{
+        } else {
             log.info("user cache miss user id ${userId}")
         }
 
-        return userCache?.let{DEFAULT_OBJECT_MAPPER.readValue(it, UserInfo::class.java)}
+        return userCache?.let { DEFAULT_OBJECT_MAPPER.readValue(it, UserInfo::class.java) }
     }
 
 
-    @Async(value = "threadPoolTaskExecutor")
     fun putUserAsync(userInfo: UserInfo) {
-        log.info("user cache put user id ${userInfo.id}")
-        try {
-            cacheService.putUser(key = userInfo.id.toString(), userInfo.toJson(), 1000 * 60 * 5)
-        }catch (e: Exception){
-            log.error("cache error : ${e.message}")
-        }
+        asyncCacheSupport.putUserAsync(userInfo)
     }
 
     fun getPerfume(perfumeId: Long): PerfumeInfo? {
-        var perfumeCache: String?
-        try {
-            perfumeCache = cacheService.getPerfume(key = perfumeId.toString())
-        }catch (e: Exception){
-            log.error("cache error : ${e.message}")
-            perfumeCache = null
-        }
-        if(perfumeCache!=null){
+        var perfumeCache: String? = cacheService.getPerfume(key = perfumeId.toString())
+
+        if (perfumeCache != null) {
             log.info("perfume cache hit perfume id ${perfumeId}")
-        }else{
+        } else {
             log.info("perfume cache miss perfume id ${perfumeId}")
         }
 
-        return perfumeCache?.let{DEFAULT_OBJECT_MAPPER.readValue(it, PerfumeInfo::class.java)}
+        return perfumeCache?.let { DEFAULT_OBJECT_MAPPER.readValue(it, PerfumeInfo::class.java) }
     }
 
 
-    @Async(value = "threadPoolTaskExecutor")
     fun putPerfumeAsync(perfumeInfo: PerfumeInfo) {
-        log.info("perfume cache put perfume id ${perfumeInfo.id}")
-        try {
-            cacheService.putPerfume(key = perfumeInfo.id.toString(), perfumeInfo.toJson(), 1000 * 60 * 5)
-        }catch (e:Exception){
-            log.error("cache error : ${e.message}")
-        }
+        asyncCacheSupport.putPerfumeAsync(perfumeInfo)
     }
 
     fun getStory(storyId: Long): StoryInfo? {
-        var storyCache:String?
-        try {
-            storyCache = cacheService.getStory(key = storyId.toString())
-        }catch (e: Exception){
-            storyCache = null
-            log.error("cache error : ${e.message}")
-        }
-        if(storyCache!=null){
+        var storyCache: String? = cacheService.getStory(key = storyId.toString())
+
+        if (storyCache != null) {
             log.info("story cache hit story id ${storyId}")
-        }else{
+        } else {
             log.info("story cache miss story id ${storyId}")
         }
 
-        return storyCache?.let{DEFAULT_OBJECT_MAPPER.readValue(it, StoryInfo::class.java)}
+        return storyCache?.let { DEFAULT_OBJECT_MAPPER.readValue(it, StoryInfo::class.java) }
     }
 
 
-    @Async(value = "threadPoolTaskExecutor")
     fun putStoryAsync(storyInfo: StoryInfo) {
-        log.info("story cache put story id ${storyInfo.id}")
-        try {
-            cacheService.putStory(key = storyInfo.id.toString(), storyInfo.toJson(), 1000 * 60 * 5)
-        }catch (e: Exception){
-            log.error("cache error : ${e.message}")
-        }
+        asyncCacheSupport.putStoryAsync(storyInfo)
     }
 
-    fun getStoryLike(storyId: Long): Long? {
-        var storyLikeCache:String?
-        try{
-            storyLikeCache = cacheService.getStoryLike(key = storyId.toString())
-        }catch (e: Exception){
-            storyLikeCache = null
-            log.error("cache error : ${e.message}")
-        }
-        if(storyLikeCache!=null){
+    fun getStoryLikeCount(storyId: Long): Long? {
+        var storyLikeCache: String? = cacheService.getStoryLike(key = storyId.toString())
+
+        if (storyLikeCache != null) {
             log.info("storyLike cache hit story id ${storyId}")
-        }else{
+        } else {
             log.info("storyLike cache miss story id ${storyId}")
         }
 
-        return storyLikeCache?.let{DEFAULT_OBJECT_MAPPER.readValue(it, Long::class.java)}
+        return storyLikeCache?.let { DEFAULT_OBJECT_MAPPER.readValue(it, Long::class.java) }
     }
 
 
-    @Async(value = "threadPoolTaskExecutor")
-    fun putStoryLikeAsync(storyId:Long, storyLike: Long) {
-        log.info("storyLike cache put story id ${storyId}")
-        try {
-            cacheService.putStoryLike(key = storyId.toString(), storyLike.toString(), 1000 * 60 * 5)
-        }catch (e: Exception){
-            log.error("cache error : ${e.message}")
-        }
+    fun putStoryLikeAsync(storyId: Long, storyLike: Long) {
+        asyncCacheSupport.putStoryLikeAsync(storyId, storyLike)
+    }
+
+    fun getStoryLikeLock(storyId: Long, userId: Long, waitMs:Long, leaseMs:Long){
+        cacheService.getLock(storyLikeLockPrefix+":${storyId}:${userId}",waitMs, leaseMs)
+    }
+
+    fun unlockStoryLike(storyId: Long, userId: Long){
+        cacheService.unlock(storyLikeLockPrefix+":${storyId}:${userId}")
     }
 
 

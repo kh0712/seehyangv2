@@ -8,6 +8,7 @@ plugins {
 }
 
 dependencies {
+    implementation("io.github.resilience4j:resilience4j-spring-boot2:1.7.1")
     implementation("org.redisson:redisson-spring-boot-starter:3.17.3")
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.jetbrains.kotlin:kotlin-reflect")

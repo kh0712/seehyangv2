@@ -13,6 +13,7 @@ import kr.mashup.seehyangrds.community.entity.Comment
 import kr.mashup.seehyangrds.community.entity.CommentReply
 import kr.mashup.seehyangrds.image.domain.ImageDomain
 import kr.mashup.seehyangrds.perfume.domain.PerfumeDomain
+import kr.mashup.seehyangrds.user.entity.User
 import kr.mashup.seehyangrds.user.service.UserQueryDomain
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -98,10 +99,11 @@ class CommunityService(
         return StoryInfo.from(story)
     }
 
-    fun likeOrCancelStory(storyId: Long, userId: Long) {
+    @Transactional(timeout = 5)
+    fun likeOrCancelStory(storyId: Long, userId:Long):Boolean {
         val user = userQueryDomain.getActiveByIdOrThrow(userId)
         val story = storyDomain.getActiveStoryByIdOrThrow(storyId)
-        storyDomain.likeOrCancelStory(user, story)
+        return storyDomain.likeOrCancelStory(user, story)
     }
 
     fun deleteStory(storyId: Long, userId: Long) {

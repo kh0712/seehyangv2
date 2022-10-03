@@ -2,3 +2,34 @@ redis:
   host: localhost
   port: 6379
   password:
+resilience4j:
+  retry:
+    configs:
+      default:
+        maxRetryAttemps: 3
+        waitDuration: 10000
+    instances:
+      redisCache:
+        baseConig: default
+        maxRetryAttempts: 3
+
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberofCalls: 10
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 15s
+        failureRateThreshold: 30
+        eventConsumerBufferSize: 10
+
+    instances:
+      redisCache:
+        registerHealthIndicator: false
+        slidingWindowType: TIME_BASED
+        minimumNumberOfCalls: 100
+        waitDurationInOpenState: 3s
+        failureRateThreshold: 10
+
