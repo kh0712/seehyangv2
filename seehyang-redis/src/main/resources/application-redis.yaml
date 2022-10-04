@@ -7,11 +7,15 @@ resilience4j:
     configs:
       default:
         maxRetryAttemps: 3
-        waitDuration: 10000
+        waitDuration: 5000
     instances:
       redisCache:
         baseConig: default
         maxRetryAttempts: 3
+  timelimiter:
+    instances:
+      redisCache:
+        timeoutDuration: 500
 
   circuitbreaker:
     configs:
@@ -29,7 +33,8 @@ resilience4j:
       redisCache:
         registerHealthIndicator: false
         slidingWindowType: TIME_BASED
-        minimumNumberOfCalls: 100
-        waitDurationInOpenState: 3s
+        minimumNumberOfCalls: 10
+        waitDurationInOpenState: 30s
         failureRateThreshold: 10
+
 

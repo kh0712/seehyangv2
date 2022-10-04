@@ -20,7 +20,7 @@ class RedissonConfig {
         config.useSingleServer().apply {
             address = "redis://${redisHost}:${redisPort}"
             connectionMinimumIdleSize = 10
-            connectionPoolSize = 30
+            connectionPoolSize = 50
             connectTimeout = 1000 * 5
             timeout = 1000 * 5
             idleConnectionTimeout = 1000 * 3

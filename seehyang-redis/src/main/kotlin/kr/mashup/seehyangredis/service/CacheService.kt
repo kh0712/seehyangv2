@@ -21,6 +21,7 @@ class CacheService(
     @CircuitBreaker(name = "redisCache", fallbackMethod = "getCacheMiss")
     fun getUser(key:String):String? = userCache[key]
 
+    @CircuitBreaker(name = "redisCache", fallbackMethod = "cacheFailLog")
     @Retry(name="redisCache", fallbackMethod = "cacheFailLog")
     fun putUser(key: String, value:String, expMills:Long) {
         userCache.fastPut(key, value, expMills, TimeUnit.MILLISECONDS)
@@ -31,6 +32,7 @@ class CacheService(
     @CircuitBreaker(name = "redisCache", fallbackMethod = "getCacheMiss")
     fun getPerfume(key:String):String? = perfumeCache[key]
 
+    @CircuitBreaker(name = "redisCache", fallbackMethod = "cacheFailLog")
     @Retry(name="redisCache", fallbackMethod = "cacheFailLog")
     fun putPerfume(key: String, value:String, expMills:Long) {
         perfumeCache.fastPut(key, value, expMills, TimeUnit.MILLISECONDS)
@@ -41,6 +43,7 @@ class CacheService(
     @CircuitBreaker(name = "redisCache", fallbackMethod = "getCacheMiss")
     fun getStory(key:String):String? = storyCache[key]
 
+    @CircuitBreaker(name = "redisCache", fallbackMethod = "cacheFailLog")
     @Retry(name="redisCache", fallbackMethod = "cacheFailLog")
     fun putStory(key: String, value:String, expMills:Long) {
         storyCache.fastPut(key, value, expMills, TimeUnit.MILLISECONDS)
@@ -51,6 +54,7 @@ class CacheService(
     @CircuitBreaker(name = "redisCache", fallbackMethod = "getCacheMiss")
     fun getStoryLike(key:String):String? = storyLikeCache[key]
 
+    @CircuitBreaker(name = "redisCache", fallbackMethod = "cacheFailLog")
     @Retry(name="redisCache", fallbackMethod = "cacheFailLog")
     fun putStoryLike(key: String, value:String, expMills:Long) {
         storyLikeCache.fastPut(key, value, expMills, TimeUnit.MILLISECONDS)
@@ -69,6 +73,9 @@ class CacheService(
         lock.unlock()
     }
 
-    private fun getCacheMiss():String? = null
-    private fun cacheFailLog() = logger.error("cache put fail")
+    private fun getCacheMiss(key:String, e:Throwable):String? {
+        logger.error("cache get fail caused by ${e.message}")
+        return null
+    }
+    private fun cacheFailLog(key: String, value:String, expMills:Long,e:Throwable ) = logger.error("cache put fail caused by ${e.message}")
 }
