@@ -40,6 +40,7 @@ class CacheService(
 
     @CircuitBreaker(name = "redisCache", fallbackMethod = "getCacheMiss")
     fun getStory(key:String):String? = storyCache[key]
+
     @Retry(name="redisCache", fallbackMethod = "cacheFailLog")
     fun putStory(key: String, value:String, expMills:Long) {
         storyCache.fastPut(key, value, expMills, TimeUnit.MILLISECONDS)

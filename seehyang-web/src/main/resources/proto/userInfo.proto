@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+message UserInfo{
+  int64 id = 1;
+  string email = 2;
+  string nickname = 3;
+  int32 age = 4;
+  Gender gender = 5;
+  int64 profileUrlId = 6;
+  enum Gender{
+    NULL = 0;
+    M = 1;
+    W = 2;
+  }
+}

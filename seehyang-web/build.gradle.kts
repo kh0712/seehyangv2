@@ -7,6 +7,11 @@ plugins {
     kotlin("plugin.spring")
 }
 
+val grpcVersion = "3.19.4"
+val grpcKotlinVersion = "1.2.1"
+val grpcProtoVersion = "1.44.1"
+
+
 configurations {
     compileOnly {
         extendsFrom(configurations.annotationProcessor.get())
@@ -33,4 +38,5 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
+
 }

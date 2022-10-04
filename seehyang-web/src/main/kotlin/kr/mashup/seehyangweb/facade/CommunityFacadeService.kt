@@ -23,13 +23,13 @@ class CommunityFacadeService(
     fun getStoryDetail(userAuth: UserAuth, storyId: Long): StoryDetailInfoResponse {
 
 
-        var userInfo: UserInfo? =  cacheSupport.getUser(userAuth.id)
+        var userInfo: UserInfo? = cacheSupport.getUser(userAuth.id)
         if (userInfo == null) {
             userInfo = userService.getActiveUserOrThrow(userAuth.id)
             cacheSupport.putUserAsync(userInfo)
         }
 
-        var storyInfo =  cacheSupport.getStory(storyId)
+        var storyInfo = cacheSupport.getStory(storyId)
         if (storyInfo == null) {
             storyInfo = communityService.getStoryInfoByStoryId(storyId)
             cacheSupport.putStoryAsync(storyInfo)
@@ -40,15 +40,15 @@ class CommunityFacadeService(
             throw BadRequestException(ResultCode.NOT_FOUND_STORY)
         }
 
-        var likeCount =  cacheSupport.getStoryLikeCount(storyId)
+        var likeCount = cacheSupport.getStoryLikeCount(storyId)
         if (likeCount == null) {
-            likeCount  = communityService.getActiveStoryLikeCount(storyId)
+            likeCount = communityService.getActiveStoryLikeCount(storyId)
             cacheSupport.putStoryLikeAsync(storyId, likeCount)
         }
 
         val perfumeId = storyInfo.perfumeId
 
-        var perfumeInfo =cacheSupport.getPerfume(perfumeId)
+        var perfumeInfo = cacheSupport.getPerfume(perfumeId)
         if (perfumeInfo == null) {
             perfumeInfo = perfumeService.getByIdOrThrow(perfumeId)
             cacheSupport.putPerfumeAsync(perfumeInfo)
@@ -64,12 +64,12 @@ class CommunityFacadeService(
     ): Page<StoryBasicInfoResponse> {
 
         var userInfo = cacheSupport.getUser(userAuth.id)
-        if(userInfo == null){
+        if (userInfo == null) {
             userInfo = userService.getActiveUserOrThrow(userAuth.id)
             cacheSupport.putUserAsync(userInfo)
         }
-        var perfumeInfo= cacheSupport.getPerfume(perfumeId)
-        if(perfumeInfo == null){
+        var perfumeInfo = cacheSupport.getPerfume(perfumeId)
+        if (perfumeInfo == null) {
             perfumeInfo = perfumeService.getByIdOrThrow(perfumeId)
             cacheSupport.putPerfumeAsync(perfumeInfo)
         }
@@ -89,9 +89,15 @@ class CommunityFacadeService(
     }
 
     fun likeStory(userAuth: UserAuth, storyId: Long) {
-        cacheSupport.getStoryLikeLock(storyId, userAuth.id,  waitMs = 3000L, leaseMs = 7000L)
-        communityService.likeOrCancelStory(storyId, userAuth.id)
-        cacheSupport.unlockStoryLike(storyId, userAuth.id)
+        cacheSupport.getStoryLikeLock(storyId, userAuth.id, waitMs = 3000L, leaseMs = 7000L)
+        try {
+            communityService.likeOrCancelStory(storyId, userAuth.id)
+        } catch (e: Exception) {
+            throw e
+        } finally {
+            cacheSupport.unlockStoryLike(storyId, userAuth.id)
+        }
+
     }
 
     fun deleteStory(storyId: Long, userAuth: UserAuth) {
